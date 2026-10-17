@@ -1,11 +1,11 @@
 # Cofre Digital — INF1416 / Trabalho T3
 
-Java SE application foundation for the PUC-Rio digital-vault assignment.
-**Phases 0–4 are implemented.** The application supports SQLite persistence, registration,
+Java SE application for the PUC-Rio digital-vault assignment.
+**Phases 0–5 are implemented.** The application supports SQLite persistence, registration,
 administrator startup validation, virtual-keypad password verification, TOTP MFA, role menus,
 registration authorization, logout, persistent account lockouts, verified vault consultation
-and owner/shared extraction. Group-only extraction awaits professor clarification; the
-operational audit viewer belongs to Phase 5 and is not implemented.
+owner/shared extraction and the independent administrator-only audit viewer. Group-only
+extraction awaits professor clarification. See FINAL-DELIVERY-CHECKLIST.md before submission.
 
 ## Build
 
@@ -21,7 +21,8 @@ in `pom.xml`. The project-local script bootstraps Maven 3.9.9 with SHA-512 verif
 ```
 
 For a preinstalled Maven, set JAVA_HOME to a JDK and run `mvn clean verify`.
-The compiler uses `--release 17`; this does not substitute for a final Java 17 runtime test.
+The compiler uses `--release 17`. Phase 5 also executes tests and packaged checks with a real,
+checksum-verified Temurin Java 17 JRE under ignored `.tools/java17`; it does not change system PATH.
 Do not use the Oracle `javapath` shim if it hangs; select the real JDK directory.
 
 ## Executables
@@ -30,12 +31,44 @@ Do not use the Oracle `javapath` shim if it hangs; select the real JDK directory
 & 'C:\Program Files\Java\jdk-24\bin\java.exe' -jar target/cofre-digital.jar --check
 & 'C:\Program Files\Java\jdk-24\bin\java.exe' -jar target/logView.jar --help
 & 'C:\Program Files\Java\jdk-24\bin\java.exe' -jar target/cofre-digital.jar
+# Real terminal, hidden input; uses existing runtime/cofre.db:
+chcp 65001
+& 'C:\Program Files\Java\jdk-24\bin\java.exe' -jar target/logView.jar 'Pacote-T3/Keys/admin-pkcs8-aes.key'
 ```
 
 The last command opens the first-run registration or administrator startup-validation screen.
-`--check`/`--help` do not create files or read secret material. `logView` without those
-flags exits with code 2: audit viewing is deliberately unavailable until implemented.
-The two executable JARs bundle runtime dependencies and have independent main classes.
+`--check`/`--help` do not create files or read secret material. logView requires a registered
+administrator key and System.console().readPassword; redirected/no-console input is refused.
+Use optional `--database <existing-path>` after the key argument to select another database.
+The two executable JARs bundle dependencies and have independent main classes. The vault JAR
+excludes viewer classes; the viewer JAR excludes vault/authentication/UI application classes.
+
+## Independent audit viewer
+
+logView restores the supplied encrypted RSA key and proves possession using a fresh signed
+2,048-byte challenge against registered administrator certificates. Ordinary keys, wrong phrases,
+invalid paths/certificates and missing secure input fail before audit records are displayed.
+It opens SQLite read-only, reads templates from Mensagens and records from Registros, then
+orders by timestamp and RID. Output includes timezone-aware timestamps, codes and stored context.
+Missing login/file context leaves its placeholder intact; malformed records are labelled safely.
+There is no audit-viewing option in the vault application.
+
+Local Java 17 verification can be reproduced with the ignored JRE prepared on this machine:
+
+```powershell
+$java17 = (Resolve-Path '.tools/java17/jdk-17.0.20.1+1-jre/bin/java.exe').Path
+& $java17 -jar target/cofre-digital.jar --check
+& $java17 -jar target/logView.jar --check
+./scripts/maven.ps1 -MavenArgs '-o','-B','-ntp','-Pfixtures',"-Djvm=$java17",'clean','verify'
+```
+
+This JRE is not included in delivery; use your installed Java 17+ runtime on another machine.
+
+On a Phase 4 database, viewer reading does not migrate or seed data. Normal vault startup adds
+nullable publication_context transactionally. File verification event 7019 can show pending,
+published or failed publication independently of successful cryptographic verification. Output-I/O
+failure no longer falsely emits the decryption-failure event. Audit storage still contains message
+references/context only. See docs/AUDIT-COVERAGE.md and docs/PHASE5-RESULTS.md.
 
 ## Manually check startup and MFA
 
@@ -145,6 +178,15 @@ and does not create extracted files. See `docs/PHASE1-RESULTS.md` for exact evid
 - `docs/PHASE2-RESULTS.md`: schema, registration/startup behavior, audit semantics, tests and limitations.
 - `docs/PHASE3-RESULTS.md`: performance gate, MFA/session implementation and validation results.
 - `docs/PHASE4-RESULTS.md`: vault permission matrix, extraction, audit/UI evidence and limitations.
+- `docs/PHASE5-RESULTS.md`: viewer, final integration, runtime/terminal and packaging results.
+- `docs/AUDIT-COVERAGE.md`: all 64 event producers and supporting scenarios.
+- `FINAL-DELIVERY-CHECKLIST.md`: exact commands, demonstration, submission and remaining checks.
+
+After verification, `./scripts/package-delivery.ps1` produces an allowlisted source/fixture/JAR
+archive and SHA-256 hashes under ignored output/delivery. It refuses a nonempty destination;
+choose another -OutputDirectory after further changes. Local configuration/runtime data and
+tool distributions are excluded. Each group member must submit the Java-source project via EAD,
+as described in the final checklist; no upload is performed by the script.
 
 Runtime artifacts belong in ignored `runtime/` and `output/`; private configuration
 belongs in ignored `.local/`. Never write outputs into `Pacote-T3/` or commit secrets.

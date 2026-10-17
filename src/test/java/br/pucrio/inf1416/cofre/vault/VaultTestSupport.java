@@ -23,6 +23,9 @@ public final class VaultTestSupport implements AutoCloseable {
     public final PrivateKey[] keys = new PrivateKey[3];
     public final PublicKey[] publics = new PublicKey[3];
     public VaultTestSupport(Path temp, boolean real) throws Exception {
+        this(temp,real,false);
+    }
+    public VaultTestSupport(Path temp, boolean real, boolean fullStartup) throws Exception {
         folder = Files.createDirectories(temp.resolve("safe")); output = Files.createDirectories(temp.resolve("out"));
         Path root = Path.of(System.getProperty("project.root"));
         Properties properties = new Properties();
@@ -50,11 +53,15 @@ public final class VaultTestSupport implements AutoCloseable {
             }
         } finally { properties.clear(); }
         database=new Database(temp.resolve("cofre.db")); var registrations=new RegistrationService(database);
-        identities[0]=AuthenticationTestSupport.register(registrations,null,true,materials[0],Group.ADMINISTRATOR,8);
+        StartupService initial=fullStartup?new StartupService(database):null;
+        if(initial!=null){if(initial.begin()!=StartupService.State.BOOTSTRAP_REQUIRED){throw new IllegalStateException();}registrations.showForm(null,true);}
+        identities[0]=AuthenticationTestSupport.register(registrations,null,true,materials[0],Group.ADMINISTRATOR,8,initial);
+        if(initial!=null){initial.shutdown();}
         startup=new StartupService(database); startup.begin(); char[] phrase=materials[0].phrase();
         try { startup.unlock(phrase); } finally { Arrays.fill(phrase,'\0'); }
         auth=new AuthenticationService(database,clock); SessionContext admin=AuthenticationTestSupport.login(auth,identities[0],clock);
         var authority=auth.registrationAuthorization(admin);
+        if(fullStartup){auth.mainMenu(admin);auth.menu(admin,AuthenticationService.Menu.REGISTER);registrations.showForm(authority,false);}
         identities[1]=AuthenticationTestSupport.register(registrations,authority,false,materials[1],Group.USER,9);
         identities[2]=AuthenticationTestSupport.register(registrations,authority,false,materials[2],Group.USER,10);
         auth.logout(admin);

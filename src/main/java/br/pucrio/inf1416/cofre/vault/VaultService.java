@@ -23,12 +23,18 @@ public final class VaultService implements AutoCloseable {
     private final AuditService audit;
     private final UserRepository users = new UserRepository();
     private final AccessPolicy policy = new AccessPolicy();
+    @FunctionalInterface interface Publisher { void publish(Path target,Path temporary)throws IOException; }
+    private final Publisher publisher;
     private Path directory;
     private Catalog listed;
     private PrivateKey key;
     private volatile boolean closed;
     public VaultService(Database database, SessionContext session, CatalogService catalogs) throws SQLException, VaultException {
+        this(database,session,catalogs,(target,temporary)->Files.createLink(target,temporary));
+    }
+    VaultService(Database database, SessionContext session, CatalogService catalogs,Publisher publisher) throws SQLException, VaultException {
         this.database = database; this.session = session; this.catalogs = catalogs; audit = new AuditService(database);
+        this.publisher=publisher;
         synchronized (session) {
             current(); record(E7001, null); session.bindConsultation(database, this);
         }
@@ -123,17 +129,18 @@ public final class VaultService implements AutoCloseable {
             Path target = SafePaths.output(outputDirectory, entry.filename(), directory);
             byte[] plaintext = decrypt(entry, access, fileContext);
             Path temporary = null;
+            long verification=0;
             try {
+                verification=database.transaction(c -> { audit.recordFile(c, E7018, user, fileContext); return audit.verifiedPendingPublication(c,user,fileContext); });
                 temporary = Files.createTempFile(target.getParent(), ".cofre-", ".tmp");
                 Files.write(temporary, plaintext);
-                // Required audit commits before publication; failure leaves no final output.
-                database.transaction(c -> { audit.recordFile(c, E7018, user, fileContext); audit.recordFile(c, E7019, user, fileContext); return null; });
                 current();
                 // Atomic no-clobber publication on NTFS/other hard-link-capable filesystems.
-                Files.createLink(target, temporary);
+                publisher.publish(target, temporary);
+                publication(verification,"published");
                 return target;
-            } catch (FileAlreadyExistsException e) { throw new VaultException(EXISTS, "Arquivo de saída já existe. Nada foi sobrescrito."); }
-            catch (IOException | UnsupportedOperationException e) { record(E7020, fileContext); throw new VaultException(INVALID_PATH, "A pasta de saída não permite a publicação segura do arquivo verificado."); }
+            } catch (FileAlreadyExistsException e) { if(verification!=0){publication(verification,"failed");} throw new VaultException(EXISTS, "Arquivo de saída já existe. Nada foi sobrescrito."); }
+            catch (IOException | UnsupportedOperationException e) { if(verification!=0){publication(verification,"failed");} throw new VaultException(INVALID_PATH, "A pasta de saída não permite a publicação segura do arquivo verificado."); }
             catch (SQLException e) { close(); throw e; }
             finally {
                 Arrays.fill(plaintext, (byte)0);
@@ -143,6 +150,9 @@ public final class VaultService implements AutoCloseable {
                 }
             }
         } }
+    }
+    private void publication(long rid,String status)throws SQLException{
+        try{database.transaction(c->{audit.publication(c,rid,status);return null;});}catch(SQLException e){close();throw e;}
     }
     private byte[] decrypt(Catalog.Entry entry, AccessPolicy.Decision access, String file) throws SQLException, VaultException {
         try {

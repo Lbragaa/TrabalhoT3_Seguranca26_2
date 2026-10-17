@@ -44,10 +44,19 @@ final class Schema {
             CREATE TABLE IF NOT EXISTS Registros (
                 RID INTEGER PRIMARY KEY, timestamp INTEGER NOT NULL,
                 MID INTEGER NOT NULL REFERENCES Mensagens(MID), UID INTEGER REFERENCES Usuarios(UID),
-                login_context TEXT, file_context TEXT)
+                login_context TEXT, file_context TEXT,
+                publication_context TEXT CHECK(publication_context IS NULL OR
+                    (MID=7019 AND publication_context IN ('pending','published','failed'))))
             """
         };
         for (String sql : statements) { try (var statement = c.createStatement()) { statement.execute(sql); } }
+        boolean publication=false;
+        try(var s=c.createStatement();var rows=s.executeQuery("PRAGMA table_info(Registros)")){
+            while(rows.next()){publication|="publication_context".equals(rows.getString("name"));}
+        }
+        if(!publication){try(var s=c.createStatement()){
+            s.execute("ALTER TABLE Registros ADD COLUMN publication_context TEXT CHECK(publication_context IS NULL OR (MID=7019 AND publication_context IN ('pending','published','failed')))");
+        }}
         try (var statement = c.prepareStatement("INSERT INTO Grupos(GID,nome,rotulo) VALUES(?,?,?) ON CONFLICT(GID) DO NOTHING")) {
             for (Group group : Group.values()) {
                 statement.setInt(1, group.id()); statement.setString(2, group.catalogLabel());

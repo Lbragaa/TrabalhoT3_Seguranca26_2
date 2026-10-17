@@ -23,6 +23,19 @@ public final class AuditService {
     public void recordFile(Connection c, AuditEvent event, User actor, String filename) throws SQLException {
         recordContext(c, event, actor, actor == null ? null : actor.email(), filename);
     }
+    /** Cryptographic verification succeeded; publication is a separate structured outcome. */
+    public long verifiedPendingPublication(Connection c, User actor, String filename) throws SQLException {
+        try(var s=c.prepareStatement("INSERT INTO Registros(timestamp,MID,UID,login_context,file_context,publication_context) VALUES(?,7019,?,?,?,'pending') RETURNING RID")){
+            s.setLong(1,System.currentTimeMillis());s.setLong(2,actor.uid());s.setString(3,actor.email());s.setString(4,filename);
+            try(var rows=s.executeQuery()){if(!rows.next()){throw new SQLException("Registro de verificação ausente.");}return rows.getLong(1);}
+        }
+    }
+    public void publication(Connection c,long rid,String status)throws SQLException{
+        if(!"published".equals(status) && !"failed".equals(status)){throw new IllegalArgumentException("Estado de publicação inválido.");}
+        try(var s=c.prepareStatement("UPDATE Registros SET publication_context=? WHERE RID=? AND MID=7019 AND publication_context='pending'")){
+            s.setString(1,status);s.setLong(2,rid);if(s.executeUpdate()!=1){throw new SQLException("Registro de publicação inconsistente.");}
+        }
+    }
     private void recordContext(Connection c, AuditEvent event, User actor, String login, String filename) throws SQLException {
         try (var statement = c.prepareStatement("INSERT INTO Registros(timestamp,MID,UID,login_context,file_context) VALUES(?,?,?,?,?)")) {
             statement.setLong(1, System.currentTimeMillis()); statement.setInt(2, event.code());

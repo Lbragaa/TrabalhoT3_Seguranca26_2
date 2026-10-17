@@ -49,7 +49,7 @@ class DatabaseTest {
         assertThrows(SQLException.class, () -> new Database(path));
         try (var c = db.open(); var s = c.prepareStatement("PRAGMA table_info(Registros)"); var r = s.executeQuery()) {
             Set<String> columns = new HashSet<>(); while (r.next()) { columns.add(r.getString("name")); }
-            assertEquals(Set.of("RID", "timestamp", "MID", "UID", "login_context", "file_context"), columns);
+            assertEquals(Set.of("RID", "timestamp", "MID", "UID", "login_context", "file_context", "publication_context"), columns);
         }
     }
     @Test void auditPersistenceFailurePropagates() throws Exception {

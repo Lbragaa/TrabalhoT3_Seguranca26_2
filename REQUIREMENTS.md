@@ -4,7 +4,7 @@
 
 A = `docs/Trabalho3.pdf` (14 pages); D = `docs/Trabalho3-Detalhamento.pdf` (16 pages).
 PDF page numbers below are physical PDF pages. Both were reviewed in full during planning.
-The PDFs override this extraction. Phases 1–4 evidence is recorded below and in their results reports. Group-only extraction remains unresolved; operational log viewing remains unimplemented.
+The PDFs override this extraction. Phases 1–5 evidence is recorded below and in their results reports. Group-only extraction remains unresolved; operational independent log viewing is implemented.
 
 | ID | Requirement / acceptance | Source | Phase | Verification / status |
 | --- | --- | --- | --- | --- |
@@ -49,11 +49,11 @@ The PDFs override this extraction. Phases 1–4 evidence is recorded below and i
 | V08 | Group-only decryption mechanism | A pp.5–6 ambiguity | 4 | BLOCKED pending professor clarification; listing still required |
 | L01 | Exact 64 MID codes/templates from assignment | A pp.8–9 | 0,2 | DatabaseTest: all 64 exact templates seeded persistently and verified on reopen |
 | L02 | Timestamp/MID/user/file contexts; message text only in Mensagens | A p.6 | 2–5 | Schema/reference and Phase 2 audit sequence tests pass; no rendered messages or credentials in Registros |
-| L03 | Record all specified UI/auth/crypto/lifecycle transitions; fail visibly on audit error | A pp.6,8–9; plan | 2–5 | Registration/startup/MFA/session/menu/exit plus Phase 4 consultation events and counter/publication audit rollback covered; independent viewer awaits Phase 5 |
-| L04 | Separate logView, registered admin only, key CLI path, no-echo passphrase | A pp.6–7 | 5 | Future real console/manual and role tests |
-| L05 | Viewer key/cert 2,048-byte challenge; failure exits; chronological date/time/code/messages | A p.7 | 5 | Future matching/mismatched keys and ordered rendering |
+| L03 | Record all specified UI/auth/crypto/lifecycle transitions; fail visibly on audit error | A pp.6,8–9; plan | 2–5 | docs/AUDIT-COVERAGE.md maps all 64 events; selected exact traces/rollback tests; Phase 5 fixes publication/crypto failure interpretation with enum context |
+| L04 | Separate logView, registered admin only, key CLI path, no-echo passphrase | A pp.6–7 | 5 | LogViewTest and both final integration paths; real Java 17 packaged terminal authentication/no-echo, wrong-input and no-console refusal executed |
+| L05 | Viewer key/cert 2,048-byte challenge; failure exits; chronological date/time/code/messages | A p.7 | 5 | Existing SignatureService fresh 2,048-byte challenge; positive/ordinary/wrong/mismatched/closed/revoked tests; timestamp/RID order, safe substitution, malformed and empty logs |
 
-## Audit scenario map (Phases 2–4 emission implemented; viewer remains pending)
+## Audit scenario map (Phases 2–5 implemented; see docs/AUDIT-COVERAGE.md)
 
 | Codes | Trigger coverage |
 | --- | --- |
@@ -123,3 +123,25 @@ Clean verification passes 179 default / 202 fixture-enabled tests, with zero fai
 Group-only decryption remains explicitly incomplete. Output requires a hard-link-capable filesystem;
 the local sandbox denies hard links, so extraction verification uses normal escalation. Java 17
 runtime, physical-phone enrollment and interactive desktop walkthrough remain unperformed.
+
+## Phase 5 final evidence
+
+Clean verification passes 190 default tests on JDK 24 and 214 fixture-enabled tests with a real
+Temurin Java 17.0.20.1 runtime, with zero failures/errors/skips. A subsequent terminal-discovered
+UTF-8 output correction passes all 12 focused viewer/launcher cases on Java 17; JARs are repackaged.
+Synthetic and professor-fixture final workflows include genuine bootstrap, startup validation,
+admin registration capability, MFA, all owner/explicit share extraction, group-only refusal,
+lockouts across restart, counters/logout and independent read-only authenticated log inspection.
+All 22 original fixture checksums remain intact. Native Swing/phone demonstration remains manual.
+
+Viewer production uses Console.readPassword exclusively; no-console exits 2, a real-terminal
+wrong test input exits 1 with no logs, and a disposable administrator authenticates in the real
+Java 17 terminal and receives correctly accented chronological output. Missing context stays
+literal; malformed records are safely labelled. Viewer Access is private, instance-bound,
+revocable and role/certificate-rechecked before querying audit rows.
+
+The five-table schema adds nullable publication_context on 7019, with pending/published/failed
+enum values and transactional legacy migration. Read-only viewer does not migrate old databases.
+No message text is added to Registros. Injected publication failures no longer emit a false
+7020 decryption failure; persistence failures surface. No unsafe filesystem fallback is introduced.
+See docs/PHASE5-RESULTS.md and FINAL-DELIVERY-CHECKLIST.md for runtime commands and readiness limits.

@@ -2,18 +2,23 @@
 
 ## Current authorization and status
 
-Phases 0–3 are complete. The user explicitly authorized **Phase 4 only** on 17 October 2026.
+Phases 0–4 are implemented. The user explicitly authorized **Phase 5** on 17 October 2026:
+independent logView, audit review, integration/security checks and delivery preparation.
 Phase 1 baseline: 87 fixture-enabled tests pass (67 in the default suite).
 Phase 2 is complete: 120 fixture-enabled tests pass (99 default), with no failures or skips.
 Phase 3 is complete: 152 fixture-enabled tests pass (130 default), with no failures or skips.
 Phase 4 is complete within the approved scope: 202 fixture-enabled tests pass (179 default),
 with no failures/errors/skips. Group-only extraction remains explicitly unresolved.
+Phase 5 automated verification is complete: 190 default tests pass on JDK 24, and 214
+fixture-enabled tests pass with a real Java 17 test JVM. The final UTF-8 output fix passed
+12 focused viewer/launcher tests on Java 17. Read docs/PHASE5-RESULTS.md and
+FINAL-DELIVERY-CHECKLIST.md; do not claim phone/native desktop checks or group-only decryption passed.
 The benchmark gate passed. Implement vault consultation, owner/shared extraction and group listing.
-Group-only extraction must fail closed without an envelope. Stop before Phase 5; no commit or push.
+Group-only extraction must fail closed without an envelope. Stop after Phase 5; no commit or push.
 Benchmark full BCrypt keypad enumeration before building authentication UI. If compliant
 verification is genuinely unusable, stop and report the measurements rather than implementing
 an interface around it. Never add an auxiliary hash, password storage or authentication bypass.
-Read `PLAN.md`, `REQUIREMENTS.md`, and `docs/PHASE4-RESULTS.md`; earlier phase reports preserve history.
+Read `PLAN.md`, `REQUIREMENTS.md`, and `docs/PHASE5-RESULTS.md`; earlier phase reports preserve history.
 These documents preserve decisions; the PDFs remain authoritative if a conflict arises.
 
 ## Working rules
@@ -50,7 +55,7 @@ These documents preserve decisions; the PDFs remain authoritative if a conflict 
 The script downloads SHA-512-verified Maven 3.9.9 if missing, sets JAVA_HOME only for
 the build, and uses `.tools/m2` as the dependency cache. Pass `-JdkHome` if necessary.
 It does not alter system PATH or the registry. Network restrictions may require the
-normal tool approval process on first download. The vault runs startup, MFA, menus and consultation; logView remains a shell.
+normal tool approval process on first download. Vault and independent logView are implemented.
 The default suite does not read private fixture credentials. `-Pfixtures` runs the full suite
 and fails explicitly if ignored `.local/fixture-secrets.properties` lacks admin/user01/user02.
 It also checks the public assignment BCrypt example from ignored
@@ -95,7 +100,19 @@ and proves all three identities survive database reopening; it never seeds runti
   final no-clobber hard-link publication. Refuse unsafe/existing destinations and outputs inside
   Pacote-T3 or the safe folder. NTFS hard links work outside the sandbox; this sandbox denies them.
   Run required extraction/build checks using normal escalation rather than weakening publication.
-- Phase 5 and operational logView remain unauthorized. No commit/push without a user request.
+- Phase 5 adds nullable Registros.publication_context on 7019: pending/published/failed. Never
+  misreport output-publication failure as a 7020 crypto failure. Preserve additive migration and
+  read-only compatibility with legacy logs. Outcome persistence failure must surface.
+- logView must use only System.console().readPassword in production, with no fallback/argument/file/
+  environment secret input. Database.existingReadOnly never initializes/migrates. Only privately
+  issued viewer Access may read logs, after fresh 2,048-byte challenge and administrator role/cert
+  checks. Recheck the role/cert before each read; preserve UTF-8 output and safe placeholder handling.
+- Shaded vault JAR excludes logview classes; logView JAR excludes app/auth/ui/vault application
+  classes. Check both manifests and that no local credentials, runtime files or test helpers enter JARs.
+- Java 17 JRE is ignored under .tools/java17/jdk-17.0.20.1+1-jre; Maven builds with installed JDK 24.
+  Pass -Djvm=<absolute-java17-bin/java.exe> to MavenArgs to reproduce the Java 17 test run.
+- Stop after completed Phase 5; changes or submission beyond that require user direction.
+  No commit/push without a user request. Regenerate delivery archive after any source/docs changes.
 
 ## Source map
 

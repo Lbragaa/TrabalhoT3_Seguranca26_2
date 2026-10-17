@@ -3,13 +3,18 @@
 ## Authorization and current boundary
 
 Architecture and all six phases are approved as a roadmap. Current execution authorization
-is **Phase 4 only**. Phases 0–3 are complete; Phase 4 evidence is in `docs/PHASE4-RESULTS.md`.
+is **Phase 5**, explicitly authorized on 17 October 2026. All six phases have implemented
+their authorized scope; final evidence is in `docs/PHASE5-RESULTS.md`.
 The benchmark gate passed using bounded parallel full enumeration, before authentication UI work.
 Phase 3 is complete: clean verification passes 130 default / 152 fixture-enabled tests,
 with zero failures, errors or skips. See the phase report for unperformed manual checks.
-Stop after Phase 4 and await user approval. Phase 5 remains a design commitment only.
+Stop after Phase 5 and await review. Native desktop/phone checks and group-only extraction
+remain unresolved/unperformed, so overall assignment compliance is conditional.
 Phase 4 verification: 179 default / 202 fixture-enabled tests, zero failures/errors/skips;
 actual owner and explicit-share extraction pass. See its report for remaining manual checks.
+Phase 5 verification: 190 default tests on JDK 24 / 214 fixture-enabled tests on actual Java 17,
+zero failures/errors/skips; 12 focused viewer/launcher cases also pass after the final encoding fix.
+Both integration paths and real non-echo terminal viewer authentication pass. No commit or push.
 
 ## Architecture
 
@@ -40,7 +45,8 @@ and the sharing envelope. No alternative seed encoding, key size or algorithm wa
 Crypto services, database, transactional registration, audit persistence and startup/forms are
 implemented. Phase 3 adds MFA, keypad, role menus, session authorization/revocation and minimum
 exit navigation. Phase 4 adds verified catalogs, access policy, session-bound consultation,
-owner/shared extraction, safe publication and consultation counters/audit. The operational log viewer remains unimplemented.
+owner/shared extraction, safe publication and consultation counters/audit. Phase 5 implements the
+independent read-only audit viewer and final integration/delivery preparation.
 
 Phase 2 registration capabilities have package-private issuance, database identity binding,
 revocation and role rechecks at prepare and commit. AuthenticationService now issues them through
@@ -69,6 +75,14 @@ are scoped to consultation and cleared on Back/session close. Output uses a veri
 file and atomic no-clobber hard-link creation, then removes the temporary name; unsupported
 filesystems fail explicitly. This Windows sandbox blocks hard links, so extraction checks
 must run with normal tool escalation. No cryptographic shortcut or fixture change is permitted.
+
+Phase 5 boundary: viewer reads only an existing read-only database, proves a registered admin's
+private-key possession with 2,048 fresh random bytes, and accepts production phrases only via
+Console.readPassword. Its bound closeable authorization gates every log query. It resolves only
+stored contexts with no guessed identities, escapes terminal controls and labels malformed records.
+Additive publication_context on 7019 distinguishes pending/published/failed output from successful
+crypto verification; output failure no longer falsely emits 7020. Existing five tables/templates
+are preserved. See docs/AUDIT-COVERAGE.md for all 64 MID producers and supporting scenarios.
 
 - Fresh SUN SHA1PRNG instance for each deterministic derivation, seeded before output;
   AES KeyGenerator at 256 bits. Start with UTF-8 password/passphrase bytes and raw envelope

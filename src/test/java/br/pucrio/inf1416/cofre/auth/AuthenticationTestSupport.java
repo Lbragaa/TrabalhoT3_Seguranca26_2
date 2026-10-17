@@ -37,6 +37,10 @@ public final class AuthenticationTestSupport {
     }
     public static Identity register(RegistrationService registrations, RegistrationAuthorization authority, boolean bootstrap,
             RegistrationTestSupport.Material material, Group group, int length) throws Exception {
+        return register(registrations,authority,bootstrap,material,group,length,null);
+    }
+    public static Identity register(RegistrationService registrations, RegistrationAuthorization authority, boolean bootstrap,
+            RegistrationTestSupport.Material material, Group group, int length, br.pucrio.inf1416.cofre.app.StartupService startup) throws Exception {
         SecureRandom random = new SecureRandom(); char first = (char) ('0' + random.nextInt(10)), second;
         do { second = (char) ('0' + random.nextInt(10)); } while (second == first);
         char[] password = new char[length];
@@ -44,7 +48,10 @@ public final class AuthenticationTestSupport {
         try (var request = material.request(group, password); var pending = registrations.prepare(authority, bootstrap, request)) {
             registrations.confirmCertificate(pending);
             String secret = pending.enrollmentSecret();
-            try (var result = registrations.commit(pending)) { return new Identity(result.user(), secret, password); }
+            try (var result = registrations.commit(pending)) {
+                if(startup!=null){startup.acceptBootstrap(result);}
+                return new Identity(result.user(), secret, password);
+            }
         } finally { Arrays.fill(password, '\0'); }
     }
     public static SessionContext login(AuthenticationService auth, Identity identity, Clock clock) throws Exception {
