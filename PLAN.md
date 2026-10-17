@@ -1,5 +1,10 @@
 # Approved implementation roadmap
 
+Latest checkpoint: the user-authorized final pre-submission audit is recorded in
+`docs/FINAL-AUDIT-RESULTS.md`. Both complete suites were rerun after the UTF-8 fix
+(190 default / 214 on Java17, zero failures/errors/skips). Audited delivery is in
+`output/delivery-final-audit/`. Prior phase details below preserve historical decisions.
+
 ## Authorization and current boundary
 
 Architecture and all six phases are approved as a roadmap. Current execution authorization

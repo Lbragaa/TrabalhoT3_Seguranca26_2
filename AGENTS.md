@@ -2,6 +2,14 @@
 
 ## Current authorization and status
 
+Final pre-submission audit was authorized and completed on 17 October 2026 after Phase 5.
+Read `docs/FINAL-AUDIT-RESULTS.md` first for the latest compliance assessment and final release.
+Current full clean verification: 190 default tests on JDK24 and 214 fixture tests on Java17,
+zero failures/errors/skips, including the UTF-8 fix. Production code is unchanged by the audit.
+Final audited archive: `output/delivery-final-audit/`; its hashes and verification receipt are
+beside the ZIP. Recommendation remains CONDITIONAL GO; no native desktop/phone success or
+group-only extraction is claimed. Stop after this audit; no commit, push or submission is authorized.
+
 Phases 0–4 are implemented. The user explicitly authorized **Phase 5** on 17 October 2026:
 independent logView, audit review, integration/security checks and delivery preparation.
 Phase 1 baseline: 87 fixture-enabled tests pass (67 in the default suite).

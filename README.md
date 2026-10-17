@@ -1,5 +1,9 @@
 # Cofre Digital — INF1416 / Trabalho T3
 
+Final compliance review: [FINAL-AUDIT-RESULTS](docs/FINAL-AUDIT-RESULTS.md).
+Latest audited archive and hashes: `output/delivery-final-audit/` (local generated output).
+Use [FINAL-DELIVERY-CHECKLIST](FINAL-DELIVERY-CHECKLIST.md) for the existing-account manual smoke test.
+
 Java SE application for the PUC-Rio digital-vault assignment.
 **Phases 0–5 are implemented.** The application supports SQLite persistence, registration,
 administrator startup validation, virtual-keypad password verification, TOTP MFA, role menus,

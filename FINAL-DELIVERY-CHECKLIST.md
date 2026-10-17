@@ -1,5 +1,8 @@
 # Final delivery checklist — Cofre Digital
 
+Latest review: `docs/FINAL-AUDIT-RESULTS.md`. The final audited release is in
+`output/delivery-final-audit/`; older `output/delivery/` files are historical.
+
 ## Build and required files
 
 - Use Windows with a desktop-capable Java 17+ runtime. Building needs JDK 17+ and PowerShell.
@@ -57,7 +60,51 @@ databases transactionally without deleting users/logs. logView can read a Phase 
 performing that migration. `pending` is unconfirmed publication, `published` confirms it, and
 `failed` reports output failure after valid cryptographic verification. Older null context is unknown.
 
-## Reproduce the fixture demonstration
+## Manual smoke test starting with an existing administrator
+
+Run from the folder containing your intended `runtime/cofre.db`. Do not delete, replace or
+reset that database. These actions intentionally add normal audit records/counters; registration
+adds an account only after confirmation. Use your already enrolled phone account and personal
+password. If its enrollment is unavailable, stop: this application has no recovery bypass.
+
+1. **Startup:** run `& $java -jar target/cofre-digital.jar`. Enter the bootstrap administrator's
+   private-key phrase. Expect the email login screen, not a menu or a new-registration form.
+   A wrong phrase must notify and terminate. An unexpected bootstrap form usually means the
+   working directory/database is wrong; stop without registering a replacement administrator.
+2. **Administrator MFA:** enter the registered email, use the button containing each personal
+   password digit (labels reshuffle after every click), then enter the six-digit code from the
+   actual Google Authenticator app. Expect a responsive UI and the administrator menu only
+   after the token succeeds. A menu before the token, frozen controls, or rejection of repeated
+   fresh correct phone codes is a failure to investigate (also check both device clocks).
+3. **Menu/registration:** check login/group/name/access count. Open Cadastrar, check the user
+   count and certificate fields. If user01/user02 are not registered, register their original
+   pairs, enroll each displayed secret on the phone and confirm. Success must clear the form
+   and update the count. If already registered, cancel certificate confirmation or exercise
+   duplicate rejection; expect retained input and no additional account. Back must return to
+   the menu. Never recreate an existing account merely to repeat this check.
+4. **Consultation:** use Sair -> Encerrar Sessão, complete user01 MFA and check that Cadastrar
+   is absent. List `Pacote-T3/Files` with user01's key phrase after all three identities exist.
+   Expect its owned file and user02's explicit share; select each row and press Extrair into
+   separate empty NTFS folders outside the safe/fixture folder. Expect verified output and a
+   success notice. Repeat to the same destination: refusal, with original output unchanged.
+   As user02, the user01 group-visible file must report the missing-envelope limitation, with
+   no output. That refusal is an acknowledged compliance gap, not proof of group decryption.
+5. **Back/logout/persistence:** Back must release consultation, returning to the menu. Use
+   Sair -> Voltar, then Sair -> Encerrar Sessão; expect login stage 1. Exit/relaunch and log in
+   again. Startup validation must recur, counts must persist, and access count must increase
+   only after full MFA. Missing counts, lingering privileged screens, or extraction after
+   logout are failures. Deliberate three-error lockouts are optional here; automated tests
+   already check restart persistence and the exact 120-second boundary.
+6. **Independent viewer:** close the vault; in interactive PowerShell run `chcp 65001`, then
+   `& $java -jar target/logView.jar 'Pacote-T3/Keys/admin-pkcs8-aes.key' --database 'runtime/cofre.db'`.
+   Expect a non-echoed phrase prompt and chronological time/code/resolved-message rows with
+   readable accents. Wrong phrases and an ordinary user's matching key must produce no rows.
+   Displayed password characters, records before authentication, or a writable/mutated database
+   are failures. Missing bootstrap contexts may correctly remain literal placeholders.
+
+These six checks are **not marked passed** by automated service/headless Swing tests.
+
+## Reproduce the fixture demonstration from an intentionally fresh database
 
 1. Start the vault with a fresh intended runtime database. Register the professor administrator
    certificate/key, choosing a disposable valid 8–10-digit personal password with no adjacent repeat.
@@ -92,7 +139,7 @@ BCrypt sample is in ignored `.local/assignment-bcrypt-example.properties`. Neith
 - [ ] Run logView in the actual presentation terminal and check displayed accents/timezone/context.
 - [ ] Reproduce keypad benchmark on a materially slower demonstration machine if necessary.
 - [ ] Resolve or explicitly disclose group-only extraction and provisional adjacent-repeat policy.
-- [ ] Review `docs/PHASE5-RESULTS.md` for executed results and outstanding manual conditions.
+- [ ] Review `docs/FINAL-AUDIT-RESULTS.md` for final executed results and outstanding conditions.
 - [ ] Keep local credentials, databases, extracts, demo identities and tool distributions out of submission.
 - [ ] Verify ZIP contents and artifact hashes after any final changes. Do not submit an old build.
 
@@ -111,7 +158,7 @@ After verification, prepare the allowlisted source/JAR delivery and SHA-256 hash
 ./scripts/package-delivery.ps1 -OutputDirectory 'output/delivery-revised'
 ```
 
-The prepared files are `output/delivery/cofre-digital-submission.zip`, both executable JARs
+The final audited files are `output/delivery-final-audit/cofre-digital-submission.zip`, both executable JARs
 and `SHA256SUMS.txt`. The ZIP contains all Java sources, build/run docs, tests, original encrypted
 professor fixtures and the two JARs under target/. It contains no local credential configuration,
 registered runtime database, extracted content, generated demo material or tool/runtime distributions.

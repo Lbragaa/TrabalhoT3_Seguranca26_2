@@ -1,5 +1,10 @@
 # Requirements and verification matrix
 
+For the independent final requirement-by-requirement classifications based on a fresh full
+PDF/code review, see `docs/FINAL-AUDIT-RESULTS.md`. Its final full-suite evidence supersedes
+the earlier phase-specific runtime/test limitations below; native desktop/phone and the
+group-only extraction ambiguity remain outstanding.
+
 ## Sources and status
 
 A = `docs/Trabalho3.pdf` (14 pages); D = `docs/Trabalho3-Detalhamento.pdf` (16 pages).
