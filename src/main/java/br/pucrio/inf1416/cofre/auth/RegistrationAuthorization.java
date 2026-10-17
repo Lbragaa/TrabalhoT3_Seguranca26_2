@@ -2,7 +2,7 @@ package br.pucrio.inf1416.cofre.auth;
 
 import br.pucrio.inf1416.cofre.db.Database;
 
-/** Future MFA session capability. There is deliberately no public issuer in Phase 2. */
+/** MFA session capability: package-private issuance, owned and revoked by the authenticated session. */
 public final class RegistrationAuthorization implements AutoCloseable {
     final Database database;
     final long uid;

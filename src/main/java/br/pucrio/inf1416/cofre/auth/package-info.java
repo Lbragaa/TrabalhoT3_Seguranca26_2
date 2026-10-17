@@ -1,2 +1,2 @@
-/** Phase 2 registration and password policy; multifactor authentication awaits Phase 3. */
+/** Registration, overloaded numeric keypad, persistent multifactor authentication and session capabilities. */
 package br.pucrio.inf1416.cofre.auth;

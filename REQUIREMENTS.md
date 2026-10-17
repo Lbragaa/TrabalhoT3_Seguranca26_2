@@ -4,7 +4,7 @@
 
 A = `docs/Trabalho3.pdf` (14 pages); D = `docs/Trabalho3-Detalhamento.pdf` (16 pages).
 PDF page numbers below are physical PDF pages. Both were reviewed in full during planning.
-The PDFs override this extraction. Phases 1 and 2 evidence is recorded below and in their results reports. MFA, main menu, vault and log viewing remain unimplemented.
+The PDFs override this extraction. Phases 1–3 evidence is recorded below and in their results reports. Vault consultation and log viewing remain unimplemented.
 
 | ID | Requirement / acceptance | Source | Phase | Verification / status |
 | --- | --- | --- | --- | --- |
@@ -15,7 +15,7 @@ The PDFs override this extraction. Phases 1 and 2 evidence is recorded below and
 | S01 | Empty DB starts administrator registration; no ordinary bootstrap | A p.1 | 2 | RegistrationServiceTest and RegistrationUiTest: bootstrap service/form/enrollment commit pass; desktop walkthrough pending |
 | S02 | Later startup validates bootstrap private key; failure terminates | A p.1 | 2 | RegistrationServiceTest and RegistrationFixtureTest: stored-key restart, wrong phrase and mismatch termination pass |
 | S03 | Administrator phrase lives only in memory until shutdown | A p.1 | 2–4 | StartupService context cleanup and no-plaintext database tests pass; best-effort JVM memory limits apply |
-| R01 | Admin-only registration; 255-character path/phrase fields; groups Admin/User | A p.2 | 2 | Service rejects missing/ordinary/revoked/foreign authority; UI limits and group selection pass; MFA issuer awaits Phase 3 |
+| R01 | Admin-only registration; 255-character path/phrase fields; groups Admin/User | A p.2 | 2 | Service rejects missing/ordinary/revoked/foreign authority; UI limits and group selection pass; MFA-only issuer and session revocation tested in Phase 3 |
 | R02 | Password 8–10 ASCII digits, confirmation; provisional no adjacent repeats | A p.3; user clarification | 2 | RegistrationServiceTest: numeric length/ASCII/adjacent-repeat/confirmation checks pass |
 | R03 | Certificate confirmation: version, serial, validity, signature type, issuer, subject, email | A p.3 | 2 | RegistrationDialogs lists all required fields; UI controller acceptance/rejection tested with dialog seam |
 | R04 | Name/email from subject; email unique; cancellation/failure inserts nothing | A p.3 | 2 | RegistrationServiceTest and RegistrationUiTest: duplicates/races/cancellation/transaction rollback pass |
@@ -29,16 +29,16 @@ The PDFs override this extraction. Phases 1 and 2 evidence is recorded below and
 | C03 | RSA/ECB/PKCS1Padding envelope -> raw seed -> SHA1PRNG AES key | D pp.7–9 | 1 | CryptoCompatibilityTest: actual catalogs, all owners and sharing recipient pass |
 | C04 | AES/ECB/PKCS5Padding payload; SHA1withRSA signature over plaintext bytes | A pp.5–6; D pp.7–9 | 1 | CryptoPrimitivesTest and CryptoCompatibilityTest: valid and corrupt copies tested; plaintext returned only after signature check |
 | D01 | Five tables Usuarios, Chaveiro, Grupos, Mensagens, Registros with unique IDs/associations | A pp.3–4,6 | 2 | DatabaseTest and RegistrationServiceTest: exact five tables, per-connection FK, reciprocal links, seed/reopen and rollback pass |
-| A01 | Login valid email, registered and not blocked; otherwise remain stage 1 | A p.1; D p.12 | 3 | Future unknown/blocked/valid login tests |
-| A02 | Five two-digit buttons, 0–9 once, reshuffle after each click; capture displayed pair | A p.1; D pp.13–15 | 3 | Future permutation/capture/manual tests |
-| A03 | Enumerate captured pair candidates and verify BCrypt without fast-hash shortcut | D p.15; plan | 3 | Future 8/9/10 digit verification/latency tests |
-| A04 | Three consecutive password failures -> stage 1, account blocked 120s | A p.1 | 3 | Future deterministic timing/restart/account isolation |
+| A01 | Login valid email, registered and not blocked; otherwise remain stage 1 | A p.1; D p.12 | 3 | AuthenticationServiceTest: known/unknown/malformed/blocked logins and no premature sessions pass |
+| A02 | Five two-digit buttons, 0–9 once, reshuffle after each click; capture displayed pair | A p.1; D pp.13–15 | 3 | VirtualKeypadTest: 1,000 layouts/captures, digit coverage, max length and clear; Swing click tests pass |
+| A03 | Enumerate captured pair candidates and verify BCrypt without fast-hash shortcut | D p.15; plan | 3 | KeypadPasswordVerifierTest + explicit production benchmark: full 8/9/10 scans pass, <=4 workers, no shortcut |
+| A04 | Three consecutive password failures -> stage 1, account blocked 120s | A p.1 | 3 | AuthenticationServiceTest: 3 failures, exact 120s boundary, reopening and isolation/concurrent flows pass |
 | A05 | Handwritten TOTP using only Mac, SecretKeySpec, Date, supplied Base32 support | A pp.3,10–14 | 1 | TOTP.java follows allowed support classes; TOTPTest RFC 4226/6238 vectors pass |
-| A06 | HMAC-SHA1; 30s time counter; six digits including zeros; current +/- one interval | A pp.1–2; D p.16 | 1–3 | TOTPTest: vectors, zeros, 30-second boundaries, +/-1 and malformed codes pass; login UI pending |
-| A07 | Three consecutive token failures -> stage 1 and 120s block; success grants session | A p.2 | 3 | Future failure reset/session/lockout tests |
-| U01 | Login/group/name header; access count; role-dependent menu; no user registration option | A pp.2,6 | 3–4 | Future role tests/manual screens |
+| A06 | HMAC-SHA1; 30s time counter; six digits including zeros; current +/- one interval | A pp.1–2; D p.16 | 1–3 | TOTPTest: vectors, zeros, 30-second boundaries, +/-1 and malformed codes pass; AuthenticationUiTest: actual keypad/TOTP controller flow and EDT responsiveness pass; live phone walkthrough pending |
+| A07 | Three consecutive token failures -> stage 1 and 120s block; success grants session | A p.2 | 3 | AuthenticationServiceTest: token lockout/expiry/reopening, own-stage resets and MFA-only sessions pass |
+| U01 | Login/group/name header; access count; role-dependent menu; no user registration option | A pp.2,6 | 3–4 | MainMenuPanel role visibility and backend registration authorization/revocation tested; headers/counters rendered |
 | U02 | Consultation field limits, path/phrase, List, names/owner/group table, count, Back | A pp.4–5 | 4 | Future manual UI and service tests |
-| U03 | Exit confirmation; end session/end system/back; logout restarts login | A p.6 | 4 | Future lifecycle/navigation/manual checks |
+| U03 | Exit confirmation; end session/end system/back; logout restarts login | A p.6 | 4 | Minimum session exit/logout/Back implemented and audited in Phase 3; no vault navigation yet |
 | V01 | Validate current user's passphrase before listing | A p.5 | 4 | Future correct/wrong/mismatched key tests |
 | V02 | Bootstrap admin decrypts and verifies index/share before any list | A p.5; D pp.4–9 | 1,4 | CryptoCompatibilityTest: both actual catalogs verified; corrupted index copies rejected; production listing pending |
 | V03 | Parse index: code, secret filename, owner, group; share: code, positive ID, recipient | A p.5; D pp.4–5 | 4 | Fixture-test oracle derives verified owner/group/recipient matrix; production parser pending Phase 4 |
@@ -49,11 +49,11 @@ The PDFs override this extraction. Phases 1 and 2 evidence is recorded below and
 | V08 | Group-only decryption mechanism | A pp.5–6 ambiguity | 4 | BLOCKED pending professor clarification; listing still required |
 | L01 | Exact 64 MID codes/templates from assignment | A pp.8–9 | 0,2 | DatabaseTest: all 64 exact templates seeded persistently and verified on reopen |
 | L02 | Timestamp/MID/user/file contexts; message text only in Mensagens | A p.6 | 2–5 | Schema/reference and Phase 2 audit sequence tests pass; no rendered messages or credentials in Registros |
-| L03 | Record all specified UI/auth/crypto/lifecycle transitions; fail visibly on audit error | A pp.6,8–9; plan | 2–5 | Phase 2 startup/registration/cancel/Back/confirmation failures covered; later-phase triggers await their implementation |
+| L03 | Record all specified UI/auth/crypto/lifecycle transitions; fail visibly on audit error | A pp.6,8–9; plan | 2–5 | Phase 2 plus Phase 3 auth/lockout/session/menu/exit sequences and audit rollback covered; consultation/viewer triggers await later phases |
 | L04 | Separate logView, registered admin only, key CLI path, no-echo passphrase | A pp.6–7 | 5 | Future real console/manual and role tests |
 | L05 | Viewer key/cert 2,048-byte challenge; failure exits; chronological date/time/code/messages | A p.7 | 5 | Future matching/mismatched keys and ordered rendering |
 
-## Audit scenario map (Phase 2 emission implemented; later phases remain pending)
+## Audit scenario map (Phases 2–3 emission implemented; consultation remains pending)
 
 | Codes | Future trigger coverage |
 | --- | --- |
@@ -85,11 +85,26 @@ No passphrase or extracted plaintext belongs in this document or Git.
 ## Phase 2 acceptance boundary
 
 SQLite defaults to ignored runtime/cofre.db. Bootstrap and later administrator key validation
-are live GUI workflows. Administrator-authorized registration is implemented and tested as a
-component/service, with authorization issued only in test sources until Phase 3 MFA exists.
-Startup READY must never be treated as a logged-in session. No login/main menu shortcut exists.
+are live GUI workflows. Administrator-authorized registration is now connected to the actual post-MFA session capability.
+Startup READY remains separate from a session. Phase 3 now supplies the real login/main menu; no shortcut exists.
 
 Phase 2 records 1001/1002/1005/1006 and applicable 6001–6010 events. 6008 commits with
 user/key/token insertion after certificate and enrollment acknowledgement. No dedicated code
 exists for duplicate email or registration success; do not invent MIDs or misuse login events.
-No Phase 3 authentication/session events are emitted by the current startup placeholder.
+Phase 3 emits 2001–2005, 3001–3007, 4001–4007, 1003/1004, 5001–5004 and applicable 8001–8004. No 7000-series consultation events are emitted by the placeholder.
+
+## Phase 3 performance and session evidence
+
+The full BCrypt 2y/08 candidate scan was benchmarked before GUI implementation. Four workers
+reduced 8/9/10-digit worst-case median latency to 0.9345/1.8463/3.6666 seconds on this host
+(256/512/1024 checks; three measured runs each). Serial ten-digit median was 14.194 seconds.
+See docs/phase3-keypad-benchmark.csv and docs/PHASE3-RESULTS.md; the benchmark is explicit,
+not an automatic timing-sensitive unit test. No auxiliary hash or cost reduction exists.
+
+Service/GUI tests cover duplicate/restart guards, late-result rejection after flow closure,
+5 concurrent flows sharing persistent attempt limits, audit/access transaction rollback,
+logout/relogin and administrator registration capability revocation. Actual fixture-backed
+MFA for admin/user01/user02 passes; registration of user01/user02 uses the real administrator
+MFA capability. Native desktop interaction/phone enrollment and Java 17 runtime remain manual.
+Final clean builds pass 130 default tests and 152 fixture-enabled tests, with zero failures,
+errors or skips; all 22 original fixture checksums match. Both packaged `--check` launchers pass.

@@ -37,4 +37,41 @@ public final class UserRepository {
             statement.executeUpdate();
         }
     }
+
+    public static final class Credentials implements AutoCloseable {
+        private final String hash;
+        private final byte[] token;
+        private Credentials(String hash, byte[] token) { this.hash = hash; this.token = token; }
+        public String hash() { return hash; }
+        public byte[] encryptedToken() { return token.clone(); }
+        @Override public void close() { java.util.Arrays.fill(token, (byte) 0); }
+        @Override public String toString() { return "Credentials[redacted]"; }
+    }
+    public Credentials credentials(Connection c, long uid) throws SQLException {
+        try (var s = c.prepareStatement("SELECT password_hash,token_encrypted FROM Usuarios WHERE UID=?")) {
+            s.setLong(1, uid);
+            try (var r = s.executeQuery()) {
+                if (!r.next()) { throw new SQLException("Credenciais não encontradas."); }
+                return new Credentials(r.getString(1), r.getBytes(2));
+            }
+        }
+    }
+    public User refreshLockout(Connection c, long uid, long now) throws SQLException {
+        try (var s = c.prepareStatement("UPDATE Usuarios SET password_failures=0,token_failures=0,blocked_until=0 WHERE UID=? AND blocked_until>0 AND blocked_until<=?")) {
+            s.setLong(1, uid); s.setLong(2, now); s.executeUpdate();
+        }
+        return find(c, uid).orElseThrow(() -> new SQLException("Usuário não encontrado."));
+    }
+    public void failures(Connection c, long uid, int password, int token, long blockedUntil) throws SQLException {
+        try (var s = c.prepareStatement("UPDATE Usuarios SET password_failures=?,token_failures=?,blocked_until=? WHERE UID=?")) {
+            s.setInt(1, password); s.setInt(2, token); s.setLong(3, blockedUntil); s.setLong(4, uid); s.executeUpdate();
+        }
+    }
+    public void passwordAccepted(Connection c, long uid) throws SQLException {
+        try (var s = c.prepareStatement("UPDATE Usuarios SET password_failures=0 WHERE UID=?")) { s.setLong(1, uid); s.executeUpdate(); }
+    }
+    public User authenticationAccepted(Connection c, long uid) throws SQLException {
+        try (var s = c.prepareStatement("UPDATE Usuarios SET token_failures=0,access_count=access_count+1 WHERE UID=?")) { s.setLong(1, uid); s.executeUpdate(); }
+        return find(c, uid).orElseThrow();
+    }
 }

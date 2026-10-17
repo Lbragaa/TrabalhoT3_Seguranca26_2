@@ -1,0 +1,13 @@
+digits,workers,candidates_checked,min_ms,median_ms,max_ms,scenario
+8,1,256,3531.6,3547.0,3555.1,worst-correct-last
+8,4,256,922.1,934.5,939.9,worst-correct-last
+8,1,70,962.9,969.3,971.8,representative-correct
+8,4,70,350.3,356.8,359.2,representative-correct
+9,1,512,7013.9,7090.6,7093.8,worst-correct-last
+9,4,512,1834.6,1846.3,1860.1,worst-correct-last
+9,1,256,3548.2,3559.3,3577.1,representative-correct
+9,4,256,1132.3,1136.1,1141.7,representative-correct
+10,1,1024,14146.1,14194.0,14268.7,worst-correct-last
+10,4,1024,3665.6,3666.6,3760.6,worst-correct-last
+10,1,576,7916.6,7945.5,8069.5,representative-correct
+10,4,576,2061.9,2064.7,2111.0,representative-correct

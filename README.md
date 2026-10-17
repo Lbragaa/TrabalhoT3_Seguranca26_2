@@ -1,10 +1,10 @@
 # Cofre Digital — INF1416 / Trabalho T3
 
 Java SE application foundation for the PUC-Rio digital-vault assignment.
-**Phases 0–2 are implemented.** The tested cryptographic engine now supports SQLite
-persistence, transactional registration, administrator bootstrap, startup validation and
-Portuguese Swing forms. MFA login, the virtual keypad, user main menu, vault and operational
-audit viewer await later phases.
+**Phases 0–3 are implemented.** The application supports SQLite persistence, registration,
+administrator startup validation, virtual-keypad password verification, TOTP MFA, role menus,
+registration authorization, logout and persistent account lockouts. Vault consultation and
+the operational audit viewer await Phases 4 and 5.
 
 ## Build
 
@@ -36,7 +36,7 @@ The last command opens the first-run registration or administrator startup-valid
 flags exits with code 2: audit viewing is deliberately unavailable until implemented.
 The two executable JARs bundle runtime dependencies and have independent main classes.
 
-## Manually check Phase 2
+## Manually check startup and MFA
 
 Run commands from the project root. Normal startup automatically creates `runtime/cofre.db`;
 do not prepopulate it with test credentials.
@@ -48,19 +48,43 @@ do not prepopulate it with test credentials.
    the certificate dialog. Canceling either dialog creates no account and retains the form.
 3. Accept the certificate, then enroll the displayed Base32 key as a time-based token in
    Google Authenticator. Acknowledge enrollment to commit the account. No QR code is required.
-4. The form clears and startup reaches an explicit **Phase 3 unavailable** screen. This
-   screen is not a logged-in administrator session and offers no user-registration shortcut.
-5. Close using Encerrar sistema, then run the same command again. Supply the administrator's
+4. The form clears and login begins. Enter the certificate email, click the button containing
+   each digit of your personal password (the pairs reshuffle after **every click**), then OK.
+   Enter the current six-digit Google Authenticator code, retaining any leading zeros.
+5. The main menu appears only after full MFA. Administrators can register users; ordinary users
+   cannot. Consultation displays an explicit Phase 4 unavailable notice. Sair do Sistema offers
+   Encerrar Sessão, Encerrar Sistema and Back. Logout returns to login and revokes registration authority.
+6. Close using Encerrar Sistema, then run the same command again. Supply the administrator's
    private-key passphrase; the key is now loaded from the database, not the original file path.
    An incorrect phrase/key validation ends the process after an error notification.
 
-The administrator-authorized registration component is implemented and exercised with a
-test-only authorization setup. Production navigation to it must wait for Phase 3 MFA;
-startup key validation deliberately cannot grant registration privileges. Do not add a demo bypass.
+Three submitted password failures or three token failures block only that account for 120
+seconds; restarting the application does not erase the block. Limpar clears input, and Reiniciar
+identificação returns to login after the current verification finishes; neither resets failures.
+Keep the computer/phone clocks synchronized. The prescribed current +/-30-second TOTP window is used.
+
+Administrator registration navigation is connected to the post-MFA session capability.
+Startup key validation deliberately cannot grant registration privileges. No demo bypass exists.
 The default registration service/UI tests use generated certificates and disposable temporary
 databases. The fixture profile additionally registers all three professor identities in a
 temporary database and verifies their encrypted records after reopening it. It does not seed
 the normal runtime database or print credentials.
+
+## Keypad performance
+
+Full candidate enumeration remains mandatory. On this 16-logical-processor JVM, the production
+four-worker verifier's three-run worst-case medians were **0.935s / 1.846s / 3.667s** for
+8/9/10 digits (256/512/1,024 checks). Serial worst-case ten-digit verification took 14.194s.
+The UI stays responsive with duplicate actions disabled while work runs. Slower machines may
+take longer; the worker limit falls back with available CPU count. Reproduce on the demo machine:
+
+```powershell
+./scripts/benchmark-keypad.ps1 -Repetitions 3
+```
+
+This explicit benchmark uses generated disposable passwords, never private fixture credentials,
+and writes timings/counts to target/keypad-benchmark.csv. It is not part of normal unit tests.
+Recorded evidence is docs/phase3-keypad-benchmark.csv and docs/PHASE3-RESULTS.md.
 
 ## Tests and project records
 
@@ -96,6 +120,7 @@ and does not create extracted files. See `docs/PHASE1-RESULTS.md` for exact evid
 - `docs/PHASE0-RESULTS.md`: actual validation results and remaining checks.
 - `docs/PHASE1-RESULTS.md`: cryptographic APIs, real-fixture compatibility and test results.
 - `docs/PHASE2-RESULTS.md`: schema, registration/startup behavior, audit semantics, tests and limitations.
+- `docs/PHASE3-RESULTS.md`: performance gate, MFA/session implementation and validation results.
 
 Runtime artifacts belong in ignored `runtime/` and `output/`; private configuration
 belongs in ignored `.local/`. Never write outputs into `Pacote-T3/` or commit secrets.

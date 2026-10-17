@@ -3,9 +3,11 @@
 ## Authorization and current boundary
 
 Architecture and all six phases are approved as a roadmap. Current execution authorization
-is **Phase 2 only**. Phases 0 and 1 are complete; Phase 2 evidence is in `docs/PHASE2-RESULTS.md`.
-Phase 2 clean verification passed: 120 fixture-enabled tests, 99 default tests, no failures or skips.
-Stop after Phase 2 and await user approval. Phases 3–5 remain design commitments only.
+is **Phase 3 only**. Phases 0–2 are complete; Phase 3 evidence is in `docs/PHASE3-RESULTS.md`.
+The benchmark gate passed using bounded parallel full enumeration, before authentication UI work.
+Phase 3 is complete: clean verification passes 130 default / 152 fixture-enabled tests,
+with zero failures, errors or skips. See the phase report for unperformed manual checks.
+Stop after Phase 3 and await user approval. Phases 4–5 remain design commitments only.
 
 ## Architecture
 
@@ -34,17 +36,26 @@ that pretend to implement later-phase behavior.
 Phase 1 proves the proposed SUN/SunJCE profile against all supplied keys/catalogs/payloads
 and the sharing envelope. No alternative seed encoding, key size or algorithm was required.
 Crypto services, database, transactional registration, audit persistence and startup/forms are
-implemented. Application MFA, keypad, user main menu, access policy, production catalog parser,
-vault GUI and operational log viewer remain unimplemented.
+implemented. Phase 3 adds MFA, keypad, role menus, session authorization/revocation and minimum
+exit navigation. Access policy, production catalog parser, vault and operational log viewer remain unimplemented.
 
 Phase 2 registration capabilities have package-private issuance, database identity binding,
-revocation and role rechecks at prepare and commit. Only test sources issue them so far.
-Phase 3 must mint them only after complete administrator MFA; startup READY is not a session.
+revocation and role rechecks at prepare and commit. AuthenticationService now issues them through
+SessionContext only after complete administrator MFA; startup READY is still not a session.
 Normal startup uses ignored runtime/cofre.db. Group IDs 1/2 map exactly to administrador/usuario
 and UI Administrador/Usuário. Reciprocal composite UID/KID foreign keys are deferred until commit.
 Registration validates and snapshots source files before dialogs; cancellation inserts no account.
 Accepted enrollment commits user/key/token and event 6008 together. There is no invented success
 MID or dedicated duplicate-email event in the professor catalog; 6002 records the attempted submit.
+
+Phase 3 implementation decision: keep all eligible BCrypt checks and parallelize them across
+at most four workers. Three-run worst-case medians: serial 3.547/7.091/14.194s; four workers
+0.935/1.846/3.667s (8/9/10 digits). No auxiliary password hash, plaintext storage, lower cost,
+early match return or changed keypad behavior was introduced. Long-running scans stay outside
+database write transactions and the EDT; current block state is rechecked transactionally afterward.
+Session creation/access increment and audit commit together; logout closes the capability.
+Candidate scan buffers and recovered password copies are cleared; only the token validator
+survives into stage 3 and is closed on success, restart, block or shutdown.
 
 - Fresh SUN SHA1PRNG instance for each deterministic derivation, seeded before output;
   AES KeyGenerator at 256 bits. Start with UTF-8 password/passphrase bytes and raw envelope

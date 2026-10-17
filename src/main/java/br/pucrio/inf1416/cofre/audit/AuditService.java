@@ -14,10 +14,15 @@ public final class AuditService {
         database.transaction(c -> { record(c, event, actor); return null; });
     }
     public void record(Connection c, AuditEvent event, User actor) throws SQLException {
+        recordIdentity(c, event, actor, actor == null ? null : actor.email());
+    }
+    /** Explicit login identity context for an unknown, syntactically valid email; never a token/password. */
+    public void recordIdentity(Connection c, AuditEvent event, User actor, String login) throws SQLException {
         try (var statement = c.prepareStatement("INSERT INTO Registros(timestamp,MID,UID,login_context) VALUES(?,?,?,?)")) {
             statement.setLong(1, System.currentTimeMillis()); statement.setInt(2, event.code());
-            if (actor == null) { statement.setNull(3, Types.BIGINT); statement.setNull(4, Types.VARCHAR); }
-            else { statement.setLong(3, actor.uid()); statement.setString(4, actor.email()); }
+            if (actor == null) { statement.setNull(3, Types.BIGINT); }
+            else { statement.setLong(3, actor.uid()); }
+            statement.setString(4, login);
             statement.executeUpdate();
         }
     }

@@ -6,13 +6,13 @@ import java.nio.file.Path;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-/** Phase 2 startup/registration launcher; ordinary MFA and vault access are not implemented. */
+/** Startup, MFA and session launcher; encrypted vault consultation awaits Phase 4. */
 public final class VaultMain {
     private VaultMain() { }
 
     public static void main(String[] args) {
         if (args.length == 1 && ("--help".equals(args[0]) || "--check".equals(args[0]))) {
-            System.out.println("Cofre Digital — Phase 2. Usage: java -jar cofre-digital.jar [--help|--check]");
+            System.out.println("Cofre Digital — Phase 3. Usage: java -jar cofre-digital.jar [--help|--check]");
             return;
         }
         if (args.length != 0) {
