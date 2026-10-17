@@ -1,2 +1,2 @@
-/** Verified catalogs, access policy, and extraction (Phase 4). No implementation in Phase 0. */
+/** Verified catalogs, session-bound access policy and owner/shared extraction. */
 package br.pucrio.inf1416.cofre.vault;

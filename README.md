@@ -1,10 +1,11 @@
 # Cofre Digital — INF1416 / Trabalho T3
 
 Java SE application foundation for the PUC-Rio digital-vault assignment.
-**Phases 0–3 are implemented.** The application supports SQLite persistence, registration,
+**Phases 0–4 are implemented.** The application supports SQLite persistence, registration,
 administrator startup validation, virtual-keypad password verification, TOTP MFA, role menus,
-registration authorization, logout and persistent account lockouts. Vault consultation and
-the operational audit viewer await Phases 4 and 5.
+registration authorization, logout, persistent account lockouts, verified vault consultation
+and owner/shared extraction. Group-only extraction awaits professor clarification; the
+operational audit viewer belongs to Phase 5 and is not implemented.
 
 ## Build
 
@@ -52,7 +53,7 @@ do not prepopulate it with test credentials.
    each digit of your personal password (the pairs reshuffle after **every click**), then OK.
    Enter the current six-digit Google Authenticator code, retaining any leading zeros.
 5. The main menu appears only after full MFA. Administrators can register users; ordinary users
-   cannot. Consultation displays an explicit Phase 4 unavailable notice. Sair do Sistema offers
+   cannot. Consultation opens the verified vault workflow described below. Sair do Sistema offers
    Encerrar Sessão, Encerrar Sistema and Back. Logout returns to login and revokes registration authority.
 6. Close using Encerrar Sistema, then run the same command again. Supply the administrator's
    private-key passphrase; the key is now loaded from the database, not the original file path.
@@ -69,6 +70,28 @@ The default registration service/UI tests use generated certificates and disposa
 databases. The fixture profile additionally registers all three professor identities in a
 temporary database and verifies their encrypted records after reopening it. It does not seed
 the normal runtime database or print credentials.
+
+## Manually check vault consultation
+
+1. Register the three professor identities through the normal administrator flow, enrolling
+   each separate Authenticator secret. Owners/recipients referenced by catalogs must be registered.
+2. Complete MFA as the desired identity, then choose Consultar Pasta de Arquivos Secretos.
+   Select `Pacote-T3/Files` as the safe folder and supply **that user's private-key passphrase**.
+3. Press Listar. Both administrator catalogs must decrypt and verify before rows appear.
+   The header's consultation count increases once per successful List. The phrase field clears.
+4. Select a row, press Extrair arquivo selecionado, and choose an output directory such as
+   `output/consulta` (create it first). Keep it outside `Pacote-T3` and the selected safe folder.
+   Existing files are refused; choose a different empty directory to repeat extraction.
+5. Owners extract through `.env`. User01 can also extract user02's shared XXYYZZ22 through
+   `.1.shr`, verified using user02's certificate. User02 sees XXYYZZ11 through group membership,
+   but extraction reports that no recipient envelope is specified. No other private key is borrowed.
+6. Voltar clears the consultation's key/list and returns to the main menu. Logout revokes the
+   session and all its consultations; startup administrator material stays until system termination.
+
+Publication uses an atomic hard-link create after verification/audit, followed by temporary-name
+cleanup. Use a filesystem supporting hard links (NTFS works on this host). Unsupported destinations
+fail explicitly. The Codex Windows sandbox blocks this operation: extraction tests require normal
+escalated execution; they pass outside the sandbox. Native desktop/phone walkthrough remains manual.
 
 ## Keypad performance
 
@@ -121,6 +144,7 @@ and does not create extracted files. See `docs/PHASE1-RESULTS.md` for exact evid
 - `docs/PHASE1-RESULTS.md`: cryptographic APIs, real-fixture compatibility and test results.
 - `docs/PHASE2-RESULTS.md`: schema, registration/startup behavior, audit semantics, tests and limitations.
 - `docs/PHASE3-RESULTS.md`: performance gate, MFA/session implementation and validation results.
+- `docs/PHASE4-RESULTS.md`: vault permission matrix, extraction, audit/UI evidence and limitations.
 
 Runtime artifacts belong in ignored `runtime/` and `output/`; private configuration
 belongs in ignored `.local/`. Never write outputs into `Pacote-T3/` or commit secrets.

@@ -18,11 +18,18 @@ public final class AuditService {
     }
     /** Explicit login identity context for an unknown, syntactically valid email; never a token/password. */
     public void recordIdentity(Connection c, AuditEvent event, User actor, String login) throws SQLException {
-        try (var statement = c.prepareStatement("INSERT INTO Registros(timestamp,MID,UID,login_context) VALUES(?,?,?,?)")) {
+        recordContext(c, event, actor, login, null);
+    }
+    public void recordFile(Connection c, AuditEvent event, User actor, String filename) throws SQLException {
+        recordContext(c, event, actor, actor == null ? null : actor.email(), filename);
+    }
+    private void recordContext(Connection c, AuditEvent event, User actor, String login, String filename) throws SQLException {
+        try (var statement = c.prepareStatement("INSERT INTO Registros(timestamp,MID,UID,login_context,file_context) VALUES(?,?,?,?,?)")) {
             statement.setLong(1, System.currentTimeMillis()); statement.setInt(2, event.code());
             if (actor == null) { statement.setNull(3, Types.BIGINT); }
             else { statement.setLong(3, actor.uid()); }
             statement.setString(4, login);
+            statement.setString(5, filename);
             statement.executeUpdate();
         }
     }

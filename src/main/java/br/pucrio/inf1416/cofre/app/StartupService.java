@@ -88,4 +88,27 @@ public final class StartupService {
         finally { if (context != null) { context.close(); context = null; } }
     }
     public synchronized boolean hasAdministratorMaterial() { return context != null && !context.isClosed(); }
+    /** Only a live MFA session can open consultation; no private-key getter is provided. */
+    public br.pucrio.inf1416.cofre.vault.VaultService openVault(br.pucrio.inf1416.cofre.auth.SessionContext session)
+            throws SQLException, br.pucrio.inf1416.cofre.vault.VaultException {
+        if (session == null) { throw new br.pucrio.inf1416.cofre.vault.VaultException(br.pucrio.inf1416.cofre.vault.VaultException.Reason.PERMISSION, "Sessão autenticada necessária."); }
+        synchronized (session) { synchronized (this) {
+            session.requireActive(database);
+            if (state != State.READY || context == null || context.isClosed()) {
+                throw new br.pucrio.inf1416.cofre.vault.VaultException(br.pucrio.inf1416.cofre.vault.VaultException.Reason.STATE, "Partida do sistema não validada.");
+            }
+            return new br.pucrio.inf1416.cofre.vault.VaultService(database, session,
+                    new br.pucrio.inf1416.cofre.vault.CatalogService((directory, name) -> {
+                        synchronized (StartupService.this) {
+                            session.requireActive(database);
+                            if (state != State.READY || context == null) { throw new GeneralSecurityException("Contexto encerrado."); }
+                            try (var c = database.open()) {
+                                var stored = new KeyRepository().find(c, bootstrap.kid());
+                                var cert = new CertificateService().parse(stored.certificatePem().getBytes(StandardCharsets.US_ASCII));
+                                return context.catalog(directory, name, cert.getPublicKey());
+                            }
+                        }
+                    }));
+        } }
+    }
 }

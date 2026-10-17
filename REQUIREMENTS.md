@@ -4,7 +4,7 @@
 
 A = `docs/Trabalho3.pdf` (14 pages); D = `docs/Trabalho3-Detalhamento.pdf` (16 pages).
 PDF page numbers below are physical PDF pages. Both were reviewed in full during planning.
-The PDFs override this extraction. Phases 1–3 evidence is recorded below and in their results reports. Vault consultation and log viewing remain unimplemented.
+The PDFs override this extraction. Phases 1–4 evidence is recorded below and in their results reports. Group-only extraction remains unresolved; operational log viewing remains unimplemented.
 
 | ID | Requirement / acceptance | Source | Phase | Verification / status |
 | --- | --- | --- | --- | --- |
@@ -37,25 +37,25 @@ The PDFs override this extraction. Phases 1–3 evidence is recorded below and i
 | A06 | HMAC-SHA1; 30s time counter; six digits including zeros; current +/- one interval | A pp.1–2; D p.16 | 1–3 | TOTPTest: vectors, zeros, 30-second boundaries, +/-1 and malformed codes pass; AuthenticationUiTest: actual keypad/TOTP controller flow and EDT responsiveness pass; live phone walkthrough pending |
 | A07 | Three consecutive token failures -> stage 1 and 120s block; success grants session | A p.2 | 3 | AuthenticationServiceTest: token lockout/expiry/reopening, own-stage resets and MFA-only sessions pass |
 | U01 | Login/group/name header; access count; role-dependent menu; no user registration option | A pp.2,6 | 3–4 | MainMenuPanel role visibility and backend registration authorization/revocation tested; headers/counters rendered |
-| U02 | Consultation field limits, path/phrase, List, names/owner/group table, count, Back | A pp.4–5 | 4 | Future manual UI and service tests |
-| U03 | Exit confirmation; end session/end system/back; logout restarts login | A p.6 | 4 | Minimum session exit/logout/Back implemented and audited in Phase 3; no vault navigation yet |
-| V01 | Validate current user's passphrase before listing | A p.5 | 4 | Future correct/wrong/mismatched key tests |
-| V02 | Bootstrap admin decrypts and verifies index/share before any list | A p.5; D pp.4–9 | 1,4 | CryptoCompatibilityTest: both actual catalogs verified; corrupted index copies rejected; production listing pending |
-| V03 | Parse index: code, secret filename, owner, group; share: code, positive ID, recipient | A p.5; D pp.4–5 | 4 | Fixture-test oracle derives verified owner/group/recipient matrix; production parser pending Phase 4 |
-| V04 | Deduplicated listing union: owner, same group, explicit recipient | A p.5 | 4 | Future per-user/per-file policy tests |
-| V05 | Owner .env, recipient .N.shr; verify owner signature, then save secret filename | A p.6; D pp.6–9 | 1,4 | CryptoCompatibilityTest: owner/share equality passes; saving/extraction UI pending Phase 4 |
-| V06 | Recheck permissions; unknown owner/missing envelope/corruption cannot publish output | A pp.5–6; plan | 4 | Future negative tests on temporary copies |
-| V07 | Safe output outside original fixture tree; no traversal/overwrite; verify before publish | Approved plan | 4 | Future output safety tests |
+| U02 | Consultation field limits, path/phrase, List, names/owner/group table, count, Back | A pp.4–5 | 4 | ConsultationUiTest: actual List/extract/Back, 255-character limits, count, EDT pulse and disposed-view handling; desktop walkthrough pending |
+| U03 | Exit confirmation; end session/end system/back; logout restarts login | A p.6 | 3–4 | Existing exit/logout preserved; consultation Back and session-scoped key cleanup tested |
+| V01 | Validate current user's passphrase before listing | A p.5 | 4 | VaultServiceTest: stored-key challenge, wrong phrase/corrupt key and mismatched certificate rejection |
+| V02 | Bootstrap admin decrypts and verifies index/share before any list | A p.5; D pp.4–9 | 1,4 | CatalogServiceTest verifies both-before-parse ordering; VaultServiceTest corrupts all six catalog metafiles; VaultFixtureTest uses real startup context |
+| V03 | Parse index: code, secret filename, owner, group; share: code, positive ID, recipient | A p.5; D pp.4–5 | 4 | CatalogParserTest: 26 valid/invalid cases, duplicates, references, unsafe names, ASCII and punctuation; actual signed fixtures parsed by production parser |
+| V04 | Deduplicated listing union: owner, same group, explicit recipient | A p.5 | 4 | AccessPolicyTest, VaultServiceTest and VaultFixtureTest assert union and each user/file route |
+| V05 | Owner .env, recipient .N.shr; verify owner signature, then save secret filename | A p.6; D pp.6–9 | 1,4 | VaultFixtureTest extracts all three owners and actual user01 share, comparing against owner-verified bytes; wrong recipient signature rejected |
+| V06 | Recheck permissions; unknown owner/missing envelope/corruption cannot publish output | A pp.5–6; plan | 4 | VaultServiceTest: catalog reload, changed attributes/share removal, unknown owner, missing envelope, damaged payload/envelope/signature, no outputs |
+| V07 | Safe output outside original fixture tree; no traversal/overwrite; verify before publish | Approved plan | 4 | SafePaths portable basename/canonical checks; temporary verified bytes and no-clobber publication; overwrite/excluded-folder and audit-failure tests |
 | V08 | Group-only decryption mechanism | A pp.5–6 ambiguity | 4 | BLOCKED pending professor clarification; listing still required |
 | L01 | Exact 64 MID codes/templates from assignment | A pp.8–9 | 0,2 | DatabaseTest: all 64 exact templates seeded persistently and verified on reopen |
 | L02 | Timestamp/MID/user/file contexts; message text only in Mensagens | A p.6 | 2–5 | Schema/reference and Phase 2 audit sequence tests pass; no rendered messages or credentials in Registros |
-| L03 | Record all specified UI/auth/crypto/lifecycle transitions; fail visibly on audit error | A pp.6,8–9; plan | 2–5 | Phase 2 plus Phase 3 auth/lockout/session/menu/exit sequences and audit rollback covered; consultation/viewer triggers await later phases |
+| L03 | Record all specified UI/auth/crypto/lifecycle transitions; fail visibly on audit error | A pp.6,8–9; plan | 2–5 | Registration/startup/MFA/session/menu/exit plus Phase 4 consultation events and counter/publication audit rollback covered; independent viewer awaits Phase 5 |
 | L04 | Separate logView, registered admin only, key CLI path, no-echo passphrase | A pp.6–7 | 5 | Future real console/manual and role tests |
 | L05 | Viewer key/cert 2,048-byte challenge; failure exits; chronological date/time/code/messages | A p.7 | 5 | Future matching/mismatched keys and ordered rendering |
 
-## Audit scenario map (Phases 2–3 emission implemented; consultation remains pending)
+## Audit scenario map (Phases 2–4 emission implemented; viewer remains pending)
 
-| Codes | Future trigger coverage |
+| Codes | Trigger coverage |
 | --- | --- |
 | 1001–1006 | System start/end, session start/end, initial/normal startup |
 | 2001–2005 | Stage 1 entry/exit, identified allowed/blocked, unknown login |
@@ -91,7 +91,10 @@ Startup READY remains separate from a session. Phase 3 now supplies the real log
 Phase 2 records 1001/1002/1005/1006 and applicable 6001–6010 events. 6008 commits with
 user/key/token insertion after certificate and enrollment acknowledgement. No dedicated code
 exists for duplicate email or registration success; do not invent MIDs or misuse login events.
-Phase 3 emits 2001–2005, 3001–3007, 4001–4007, 1003/1004, 5001–5004 and applicable 8001–8004. No 7000-series consultation events are emitted by the placeholder.
+Phase 3 emits 2001–2005, 3001–3007, 4001–4007, 1003/1004, 5001–5004 and applicable 8001–8004.
+Phase 4 emits 7001–7021 as their triggers occur; consultation key failures reuse the applicable
+existing 6006/6007 templates rather than inventing codes. Registros.file_context holds only the
+selected secret filename for file events. Catalog verification events never contain plaintext.
 
 ## Phase 3 performance and session evidence
 
@@ -108,3 +111,15 @@ MFA for admin/user01/user02 passes; registration of user01/user02 uses the real 
 MFA capability. Native desktop interaction/phone enrollment and Java 17 runtime remain manual.
 Final clean builds pass 130 default tests and 152 fixture-enabled tests, with zero failures,
 errors or skips; all 22 original fixture checksums match. Both packaged `--check` launchers pass.
+
+## Phase 4 evidence and limits
+
+CatalogParser/CatalogService/AccessPolicy/VaultService and Portuguese consultation UI implement
+verified owner/group/share listing and owner/recipient extraction. Both signed catalogs are
+revalidated on selection, with owner certificate lookup in Chaveiro. Counter + presentation
+events commit together; audit failure prevents publication. User keys are cleared on Back/logout.
+See docs/PHASE4-RESULTS.md for actual verification totals, the fixture matrix and manual steps.
+Clean verification passes 179 default / 202 fixture-enabled tests, with zero failures/errors/skips.
+Group-only decryption remains explicitly incomplete. Output requires a hard-link-capable filesystem;
+the local sandbox denies hard links, so extraction verification uses normal escalation. Java 17
+runtime, physical-phone enrollment and interactive desktop walkthrough remain unperformed.

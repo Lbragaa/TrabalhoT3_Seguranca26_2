@@ -12,7 +12,7 @@ public final class VaultMain {
 
     public static void main(String[] args) {
         if (args.length == 1 && ("--help".equals(args[0]) || "--check".equals(args[0]))) {
-            System.out.println("Cofre Digital — Phase 3. Usage: java -jar cofre-digital.jar [--help|--check]");
+            System.out.println("Cofre Digital — Phase 4. Usage: java -jar cofre-digital.jar [--help|--check]");
             return;
         }
         if (args.length != 0) {

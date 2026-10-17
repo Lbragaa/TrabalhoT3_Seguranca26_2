@@ -2,16 +2,18 @@
 
 ## Current authorization and status
 
-Phases 0–2 are complete. The user explicitly authorized **Phase 3 only** on 17 October 2026.
+Phases 0–3 are complete. The user explicitly authorized **Phase 4 only** on 17 October 2026.
 Phase 1 baseline: 87 fixture-enabled tests pass (67 in the default suite).
 Phase 2 is complete: 120 fixture-enabled tests pass (99 default), with no failures or skips.
 Phase 3 is complete: 152 fixture-enabled tests pass (130 default), with no failures or skips.
-The benchmark gate passed; stop here pending explicit Phase 4 approval.
-Do not implement Phase 4 or later without explicit subsequent user approval.
+Phase 4 is complete within the approved scope: 202 fixture-enabled tests pass (179 default),
+with no failures/errors/skips. Group-only extraction remains explicitly unresolved.
+The benchmark gate passed. Implement vault consultation, owner/shared extraction and group listing.
+Group-only extraction must fail closed without an envelope. Stop before Phase 5; no commit or push.
 Benchmark full BCrypt keypad enumeration before building authentication UI. If compliant
 verification is genuinely unusable, stop and report the measurements rather than implementing
 an interface around it. Never add an auxiliary hash, password storage or authentication bypass.
-Read `PLAN.md`, `REQUIREMENTS.md`, and `docs/PHASE3-RESULTS.md`; earlier phase reports preserve history.
+Read `PLAN.md`, `REQUIREMENTS.md`, and `docs/PHASE4-RESULTS.md`; earlier phase reports preserve history.
 These documents preserve decisions; the PDFs remain authoritative if a conflict arises.
 
 ## Working rules
@@ -48,7 +50,7 @@ These documents preserve decisions; the PDFs remain authoritative if a conflict 
 The script downloads SHA-512-verified Maven 3.9.9 if missing, sets JAVA_HOME only for
 the build, and uses `.tools/m2` as the dependency cache. Pass `-JdkHome` if necessary.
 It does not alter system PATH or the registry. Network restrictions may require the
-normal tool approval process on first download. The vault now runs startup, MFA and role menus; logView remains a shell.
+normal tool approval process on first download. The vault runs startup, MFA, menus and consultation; logView remains a shell.
 The default suite does not read private fixture credentials. `-Pfixtures` runs the full suite
 and fails explicitly if ignored `.local/fixture-secrets.properties` lacks admin/user01/user02.
 It also checks the public assignment BCrypt example from ignored
@@ -57,7 +59,7 @@ Never print either file. Group mapping is implemented (1=administrador, 2=usuari
 Group-only decryption remains unresolved. The registration fixture test uses temporary copies
 and proves all three identities survive database reopening; it never seeds runtime/cofre.db.
 
-## Phase 3 / future Phase 4 integration boundary
+## Authentication and vault integration boundary
 
 - Startup READY is not MFA and grants no authenticated session or registration capability.
 - AuthenticationService issues SessionContext only after TOTP verification and atomic audit/access
@@ -80,8 +82,20 @@ and proves all three identities survive database reopening; it never seeds runti
 - Database work uses IMMEDIATE transactions, per-connection foreign keys, and prepared statements.
   Audit confirmation 6008 must stay inside the registration transaction. Never suppress audit errors.
 - Crypto classes/interoperability and the original 87 fixture-enabled tests are unchanged.
-- Main-menu consultation only records selection 5003 and displays a Phase 4 unavailable notice.
-  No protected-file operation or 7000-series consultation event exists yet. Log viewer stays a shell.
+- StartupService.openVault requires a live MFA SessionContext bound to the same Database.
+  AdministratorContext.catalog stays package-scoped; never add a raw-key getter or bootstrap bypass.
+- VaultService keeps the user key only for consultation. Back/session close clears it. Session
+  monitor orders vault operations against logout. Disposed views invalidate work and reject callbacks.
+- Verify BOTH catalogs before parsing. Reverify them and recheck metadata/permissions on selection.
+  Catalog references require registered owners and recipients. Only OWNER/SHARE yield envelope routes.
+  GROUP alone yields listing and a clear extraction limitation; do not invent missing group crypto.
+- Successful verified List commits 7009/7014 and consultation_count together. File events persist
+  file_context only; never duplicate message templates or log plaintext/key/seed/phrase values.
+- Extraction verifies the owner's signature before temporary output; success audit commits before
+  final no-clobber hard-link publication. Refuse unsafe/existing destinations and outputs inside
+  Pacote-T3 or the safe folder. NTFS hard links work outside the sandbox; this sandbox denies them.
+  Run required extraction/build checks using normal escalation rather than weakening publication.
+- Phase 5 and operational logView remain unauthorized. No commit/push without a user request.
 
 ## Source map
 

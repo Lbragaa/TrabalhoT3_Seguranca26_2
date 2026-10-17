@@ -3,11 +3,13 @@
 ## Authorization and current boundary
 
 Architecture and all six phases are approved as a roadmap. Current execution authorization
-is **Phase 3 only**. Phases 0–2 are complete; Phase 3 evidence is in `docs/PHASE3-RESULTS.md`.
+is **Phase 4 only**. Phases 0–3 are complete; Phase 4 evidence is in `docs/PHASE4-RESULTS.md`.
 The benchmark gate passed using bounded parallel full enumeration, before authentication UI work.
 Phase 3 is complete: clean verification passes 130 default / 152 fixture-enabled tests,
 with zero failures, errors or skips. See the phase report for unperformed manual checks.
-Stop after Phase 3 and await user approval. Phases 4–5 remain design commitments only.
+Stop after Phase 4 and await user approval. Phase 5 remains a design commitment only.
+Phase 4 verification: 179 default / 202 fixture-enabled tests, zero failures/errors/skips;
+actual owner and explicit-share extraction pass. See its report for remaining manual checks.
 
 ## Architecture
 
@@ -37,7 +39,8 @@ Phase 1 proves the proposed SUN/SunJCE profile against all supplied keys/catalog
 and the sharing envelope. No alternative seed encoding, key size or algorithm was required.
 Crypto services, database, transactional registration, audit persistence and startup/forms are
 implemented. Phase 3 adds MFA, keypad, role menus, session authorization/revocation and minimum
-exit navigation. Access policy, production catalog parser, vault and operational log viewer remain unimplemented.
+exit navigation. Phase 4 adds verified catalogs, access policy, session-bound consultation,
+owner/shared extraction, safe publication and consultation counters/audit. The operational log viewer remains unimplemented.
 
 Phase 2 registration capabilities have package-private issuance, database identity binding,
 revocation and role rechecks at prepare and commit. AuthenticationService now issues them through
@@ -56,6 +59,16 @@ database write transactions and the EDT; current block state is rechecked transa
 Session creation/access increment and audit commit together; logout closes the capability.
 Candidate scan buffers and recovered password copies are cleared; only the token validator
 survives into stage 3 and is closed on success, restart, block or shutdown.
+
+Phase 4 boundary: StartupService opens a VaultService only for an active MFA session bound to
+the same Database instance. AdministratorContext offers only a package-scoped catalog operation;
+its key is never returned. Both signed catalogs are verified before strict ASCII parsing.
+Selection reloads/verifies catalogs and rechecks policy; group-only listing never borrows keys.
+Consultation counters increase once per verified List, atomically with 7009/7014. User keys
+are scoped to consultation and cleared on Back/session close. Output uses a verified temporary
+file and atomic no-clobber hard-link creation, then removes the temporary name; unsupported
+filesystems fail explicitly. This Windows sandbox blocks hard links, so extraction checks
+must run with normal tool escalation. No cryptographic shortcut or fixture change is permitted.
 
 - Fresh SUN SHA1PRNG instance for each deterministic derivation, seeded before output;
   AES KeyGenerator at 256 bits. Start with UTF-8 password/passphrase bytes and raw envelope
@@ -124,8 +137,8 @@ For source pages and per-requirement scenarios see REQUIREMENTS.md.
 3. Group-visible files have no specified group envelope. Professor clarification is a gate for
    group-only extraction; do not silently implement it as sharing or mark overall compliance done.
 4. Additional administrators may register; bootstrap identity owns startup/catalog context.
-5. Verified labels are `administrador` and `usuario`. Map these explicitly to future database/UI
-   groups; the production group mapping is not implemented in Phase 1.
+5. Verified labels are `administrador` and `usuario`. Phase 2 maps them explicitly to GID 1/2
+   and UI Administrador/Usuário; Phase 4 consumes that production mapping.
 6. Consultation count increments once per successful, verified List operation; access count
    increments only after complete MFA.
 7. Catalog tokens allow email punctuation and filename extensions despite 'alphanumeric' wording.
@@ -142,7 +155,7 @@ Ordinary deadline: 18 October 2026 23:59 America/Sao_Paulo; maximum late submiss
 remaining implementation time for integration/manual checking/packaging and repairs.
 
 Use JUnit temporary databases/directories, deterministic numeric times, and a separately
-invoked future fixture profile. Missing credentials must be explicit. Check professor fixture
+invoked fixture profile. Missing credentials must be explicit. Check professor fixture
 hashes before/after runs; never mutate originals for negative tests. Manual checks cover
 enrollment, keypad interaction, prescribed screens, console no-echo, packaged desktop launch.
 

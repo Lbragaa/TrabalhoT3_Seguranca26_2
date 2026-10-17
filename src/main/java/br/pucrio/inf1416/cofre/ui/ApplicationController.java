@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import javax.swing.*;
 
-/** Startup -> MFA -> role menu. Consultation remains an explicit Phase 4 placeholder. */
+/** Startup -> MFA -> role menu -> session-bound registration/consultation/exit. */
 public final class ApplicationController {
     private final JFrame frame;
     private final JPanel cards = new JPanel(new CardLayout());
@@ -19,9 +19,11 @@ public final class ApplicationController {
     private RegistrationService registrations;
     private RegistrationController registrationController;
     private AuthenticationController authenticationController;
+    private ConsultationController consultationController;
     private SessionContext session;
     private boolean busy = true;
     private record Initialized(Database database, StartupService startup, RegistrationService service, RegistrationService.FormInfo form) { }
+    private record OpenedConsultation(br.pucrio.inf1416.cofre.vault.VaultService vault, br.pucrio.inf1416.cofre.db.UserRepository.User user) { }
 
     public ApplicationController(JFrame frame) {
         this.frame = frame; frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); frame.setContentPane(cards);
@@ -71,7 +73,7 @@ public final class ApplicationController {
         BackgroundTask.run(() -> authentication.mainMenu(session), user -> {
             busy = false; MainMenuPanel panel = new MainMenuPanel(user);
             panel.register.addActionListener(e -> showRegistration());
-            panel.consult.addActionListener(e -> consultationPlaceholder());
+            panel.consult.addActionListener(e -> consultation());
             panel.exit.addActionListener(e -> showExit()); show("menu", panel);
         }, this::fatal);
     }
@@ -91,10 +93,13 @@ public final class ApplicationController {
             } catch (AuthenticationException e) { fatal(e); }
         }, this::fatal);
     }
-    private void consultationPlaceholder() {
+    private void consultation() {
         if (busy) { return; } busy = true;
-        BackgroundTask.run(() -> { authentication.menu(session, AuthenticationService.Menu.CONSULT); return null; }, ignored -> {
-            busy = false; notice("Consulta ao cofre ainda não implementada. Disponível somente após a Fase 4.");
+        BackgroundTask.run(() -> { authentication.menu(session, AuthenticationService.Menu.CONSULT); var vault = startup.openVault(session); return new OpenedConsultation(vault, vault.user()); }, opened -> {
+            busy = false; ConsultationPanel panel = new ConsultationPanel(opened.user());
+            consultationController = new ConsultationController(panel, opened.vault(), ConsultationController.swingDirectories(),
+                    () -> { consultationController = null; showMainMenu(); }, this::notice, this::fatal);
+            show("consultation", panel);
         }, this::fatal);
     }
     private void showExit() {
@@ -129,6 +134,7 @@ public final class ApplicationController {
     }
     private void exit(int code, boolean explicitButton) {
         if (busy || (registrationController != null && registrationController.isBusy())
+                || (consultationController != null && consultationController.isBusy())
                 || (authenticationController != null && authenticationController.isBusy())) { return; }
         for (Component card : cards.getComponents()) {
             if (card instanceof RegistrationPanel panel) { panel.clear(); }
@@ -136,6 +142,7 @@ public final class ApplicationController {
             if (card instanceof AuthenticationPanel panel) { panel.clearSensitiveInput(); }
         }
         if (authenticationController != null) { authenticationController.dispose(); }
+        if (consultationController != null) { consultationController.dispose(); }
         busy = true;
         BackgroundTask.run(() -> { closeResources(explicitButton); return null; }, ignored -> {
             frame.dispose(); System.exit(code);

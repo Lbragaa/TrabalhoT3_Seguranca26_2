@@ -74,4 +74,8 @@ public final class UserRepository {
         try (var s = c.prepareStatement("UPDATE Usuarios SET token_failures=0,access_count=access_count+1 WHERE UID=?")) { s.setLong(1, uid); s.executeUpdate(); }
         return find(c, uid).orElseThrow();
     }
+    public User consultationAccepted(Connection c, long uid) throws SQLException {
+        try (var s = c.prepareStatement("UPDATE Usuarios SET consultation_count=consultation_count+1 WHERE UID=?")) { s.setLong(1, uid); s.executeUpdate(); }
+        return find(c, uid).orElseThrow();
+    }
 }
