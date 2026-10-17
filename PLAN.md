@@ -3,8 +3,9 @@
 ## Authorization and current boundary
 
 Architecture and all six phases are approved as a roadmap. Current execution authorization
-is **Phase 0 only**. Stop after reporting its actual results and await user approval.
-Phases 1–5 below are design commitments, not implemented functionality.
+is **Phase 1 only**. Phase 0 is complete; Phase 1 results are in `docs/PHASE1-RESULTS.md`.
+Phase 1 implementation and its complete fixture-enabled verification passed (87 tests).
+Stop after Phase 1 and await user approval. Phases 2–5 remain design commitments only.
 
 ## Architecture
 
@@ -29,6 +30,11 @@ build infrastructure, documentation, and foundation tests. It does not create se
 that pretend to implement later-phase behavior.
 
 ## Contracts to preserve in later phases
+
+Phase 1 proves the proposed SUN/SunJCE profile against all supplied keys/catalogs/payloads
+and the sharing envelope. No alternative seed encoding, key size or algorithm was required.
+Crypto services are implemented; database, application authentication, keypad, access policy,
+production catalog parser, GUI workflows and operational log viewer remain unimplemented.
 
 - Fresh SUN SHA1PRNG instance for each deterministic derivation, seeded before output;
   AES KeyGenerator at 256 bits. Start with UTF-8 password/passphrase bytes and raw envelope
@@ -97,12 +103,13 @@ For source pages and per-requirement scenarios see REQUIREMENTS.md.
 3. Group-visible files have no specified group envelope. Professor clarification is a gate for
    group-only extraction; do not silently implement it as sharing or mark overall compliance done.
 4. Additional administrators may register; bootstrap identity owns startup/catalog context.
-5. Map actual catalog group labels only after verified decryption; do not guess group mapping.
+5. Verified labels are `administrador` and `usuario`. Map these explicitly to future database/UI
+   groups; the production group mapping is not implemented in Phase 1.
 6. Consultation count increments once per successful, verified List operation; access count
    increments only after complete MFA.
 7. Catalog tokens allow email punctuation and filename extensions despite 'alphanumeric' wording.
    Share diagram contains copied index labels; follow semantic share role and actual verified data.
-8. Vault AES key size starts at 256 bits and requires fixture proof; document any mismatch.
+8. AES-256 and the specified derivation are now proven against every supplied fixture route.
 9. Portuguese functional screens; optional QR, polish, installers and frameworks deferred.
 10. No CA/revocation infrastructure or upload/encrypt/share-authoring feature is invented.
 

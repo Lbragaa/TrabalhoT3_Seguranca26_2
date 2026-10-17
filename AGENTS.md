@@ -2,9 +2,10 @@
 
 ## Current authorization and status
 
-The user approved the architecture and six-phase roadmap, but authorized **Phase 0 only**.
-Do not implement Phase 1 or later without explicit subsequent user approval.
-Read `PLAN.md`, `REQUIREMENTS.md`, and `docs/PHASE0-RESULTS.md` before continuing.
+Phase 0 is complete. The user explicitly authorized **Phase 1 only** on 17 October 2026.
+Phase 1 is implemented and validated: 87 fixture-enabled tests pass (67 in the default suite).
+Do not implement Phase 2 or later without explicit subsequent user approval.
+Read `PLAN.md`, `REQUIREMENTS.md`, `docs/PHASE0-RESULTS.md`, and `docs/PHASE1-RESULTS.md`.
 These documents preserve decisions; the PDFs remain authoritative if a conflict arises.
 
 ## Working rules
@@ -14,7 +15,8 @@ These documents preserve decisions; the PDFs remain authoritative if a conflict 
 - Never commit passwords, passphrases, token secrets, databases, extracted files, or local
   tool distributions. Use ignored `.local/`, `runtime/`, `output/`, and `.tools/` locations.
 - Work incrementally. Complete and report the current phase's acceptance checks before
-  starting a dependent phase. Real-fixture compatibility is a Phase 1 gate, not established fact.
+  starting a dependent phase. Real-fixture compatibility is established by the Phase 1 fixture
+  profile and its results report; preserve that gate when changing cryptographic code.
 - Do not invent a group decryption mechanism. Group-only extraction requires professor
   clarification; owner and explicit-share routes are separate requirements.
 - Use the professor's prescribed legacy algorithms and formats. Do not silently modernize them.
@@ -32,6 +34,7 @@ These documents preserve decisions; the PDFs remain authoritative if a conflict 
 ```powershell
 ./scripts/maven.ps1 -MavenArgs clean,verify
 ./scripts/maven.ps1 -MavenArgs '-o','verify'
+./scripts/maven.ps1 -MavenArgs '-o','-B','-ntp','-Pfixtures','clean','verify'
 & "$env:JAVA_HOME/bin/java.exe" -jar target/cofre-digital.jar --check
 & "$env:JAVA_HOME/bin/java.exe" -jar target/logView.jar --check
 ```
@@ -40,6 +43,12 @@ The script downloads SHA-512-verified Maven 3.9.9 if missing, sets JAVA_HOME onl
 the build, and uses `.tools/m2` as the dependency cache. Pass `-JdkHome` if necessary.
 It does not alter system PATH or the registry. Network restrictions may require the
 normal tool approval process on first download. Both entry points are Phase 0 shells.
+The default suite does not read private fixture credentials. `-Pfixtures` runs the full suite
+and fails explicitly if ignored `.local/fixture-secrets.properties` lacks admin/user01/user02.
+It also checks the public assignment BCrypt example from ignored
+`.local/assignment-bcrypt-example.properties` (`password` and `hash`, copied from A p.3).
+Never print either file. Real fixture identities/groups are recorded in the Phase 1 report;
+group label mapping and group-only decryption remain later-phase concerns.
 
 ## Source map
 

@@ -1,2 +1,2 @@
-/** Cryptographic interoperability components (Phase 1). No implementation in Phase 0. */
+/** Assignment-compatible cryptographic primitives; no UI, database, or access-policy decisions. */
 package br.pucrio.inf1416.cofre.crypto;

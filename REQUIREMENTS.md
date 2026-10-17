@@ -4,7 +4,7 @@
 
 A = `docs/Trabalho3.pdf` (14 pages); D = `docs/Trabalho3-Detalhamento.pdf` (16 pages).
 PDF page numbers below are physical PDF pages. Both were reviewed in full during planning.
-The PDFs override this extraction. Phase 0 does not establish crypto/security functionality.
+The PDFs override this extraction. Phase 1 cryptographic evidence is recorded below and in docs/PHASE1-RESULTS.md. Application workflows remain unimplemented.
 
 | ID | Requirement / acceptance | Source | Phase | Verification / status |
 | --- | --- | --- | --- | --- |
@@ -19,31 +19,31 @@ The PDFs override this extraction. Phase 0 does not establish crypto/security fu
 | R02 | Password 8–10 ASCII digits, confirmation; provisional no adjacent repeats | A p.3; user clarification | 2 | Future policy/boundary/mismatch tests |
 | R03 | Certificate confirmation: version, serial, validity, signature type, issuer, subject, email | A p.3 | 2 | Future parsing tests/manual confirmation |
 | R04 | Name/email from subject; email unique; cancellation/failure inserts nothing | A p.3 | 2 | Future duplicate/rollback/cancel tests |
-| R05 | Sign/verify 10,240 random bytes to validate key pair | A p.3 | 1–2 | Future real-key and mismatch tests |
+| R05 | Sign/verify 10,240 random bytes to validate key pair | A p.3 | 1–2 | CryptoCompatibilityTest: all three key/certificate challenges pass; CryptoPrimitivesTest: mismatch rejection |
 | R06 | Store original encrypted key binary and certificate PEM in Chaveiro linked UID/KID | A pp.3–4 | 2 | Future transactional DB/storage inspection |
-| R07 | BCrypt 2y, cost 08, own Base64, 60 chars, supplied sample verifies | A p.3 | 1–2 | Future BCrypt example/format tests |
-| R08 | Generate random 20-byte TOTP key, Base32 enrollment display; encrypt Base32 with password-derived AES-256 | A pp.3–4 | 1–2 | Future enrollment round trip/storage tests/manual phone |
+| R07 | BCrypt 2y, cost 08, own Base64, 60 chars, supplied sample verifies | A p.3 | 1–2 | PasswordAndTokenSecretTest and CryptoCompatibilityTest: required format and public PDF example pass |
+| R08 | Generate random 20-byte TOTP key, Base32 enrollment display; encrypt Base32 with password-derived AES-256 | A pp.3–4 | 1–2 | TotpSecretService generation/encryption tests pass; enrollment UI/database/phone interaction pending |
 | R09 | Successful registration clears form; errors retain data; return to menu | A p.4 | 2 | Future UI manual checks |
-| C01 | Binary key AES/ECB/PKCS5Padding; SHA1PRNG/KeyGenerator AES-256; PKCS8 PEM/Base64 recovery | A p.4; D p.10 | 1 | Future actual three-key compatibility gate |
-| C02 | Extract X.509 PEM with text prefix; RSA public key | A p.4; D p.11; observed fixtures | 1 | Future three-certificate identity tests |
-| C03 | RSA/ECB/PKCS1Padding envelope -> raw seed -> SHA1PRNG AES key | D pp.7–9 | 1 | Future catalogs/owner/recipient fixture proof |
-| C04 | AES/ECB/PKCS5Padding payload; SHA1withRSA signature over plaintext bytes | A pp.5–6; D pp.7–9 | 1 | Future valid/corrupt signature/ciphertext tests |
+| C01 | Binary key AES/ECB/PKCS5Padding; SHA1PRNG/KeyGenerator AES-256; PKCS8 PEM/Base64 recovery | A p.4; D p.10 | 1 | CryptoCompatibilityTest: all three real keys restore with SUN/SunJCE AES-256 profile |
+| C02 | Extract X.509 PEM with text prefix; RSA public key | A p.4; D p.11; observed fixtures | 1 | CryptoPrimitivesTest: all text-prefixed certificates, subject identity and PEM round trips pass |
+| C03 | RSA/ECB/PKCS1Padding envelope -> raw seed -> SHA1PRNG AES key | D pp.7–9 | 1 | CryptoCompatibilityTest: actual catalogs, all owners and sharing recipient pass |
+| C04 | AES/ECB/PKCS5Padding payload; SHA1withRSA signature over plaintext bytes | A pp.5–6; D pp.7–9 | 1 | CryptoPrimitivesTest and CryptoCompatibilityTest: valid and corrupt copies tested; plaintext returned only after signature check |
 | D01 | Five tables Usuarios, Chaveiro, Grupos, Mensagens, Registros with unique IDs/associations | A pp.3–4,6 | 2 | Future schema/FK/rollback tests |
 | A01 | Login valid email, registered and not blocked; otherwise remain stage 1 | A p.1; D p.12 | 3 | Future unknown/blocked/valid login tests |
 | A02 | Five two-digit buttons, 0–9 once, reshuffle after each click; capture displayed pair | A p.1; D pp.13–15 | 3 | Future permutation/capture/manual tests |
 | A03 | Enumerate captured pair candidates and verify BCrypt without fast-hash shortcut | D p.15; plan | 3 | Future 8/9/10 digit verification/latency tests |
 | A04 | Three consecutive password failures -> stage 1, account blocked 120s | A p.1 | 3 | Future deterministic timing/restart/account isolation |
-| A05 | Handwritten TOTP using only Mac, SecretKeySpec, Date, supplied Base32 support | A pp.3,10–14 | 1 | Future source review and RFC vector tests |
-| A06 | HMAC-SHA1; 30s time counter; six digits including zeros; current +/- one interval | A pp.1–2; D p.16 | 1–3 | Future vectors/boundaries/malformed token tests |
+| A05 | Handwritten TOTP using only Mac, SecretKeySpec, Date, supplied Base32 support | A pp.3,10–14 | 1 | TOTP.java follows allowed support classes; TOTPTest RFC 4226/6238 vectors pass |
+| A06 | HMAC-SHA1; 30s time counter; six digits including zeros; current +/- one interval | A pp.1–2; D p.16 | 1–3 | TOTPTest: vectors, zeros, 30-second boundaries, +/-1 and malformed codes pass; login UI pending |
 | A07 | Three consecutive token failures -> stage 1 and 120s block; success grants session | A p.2 | 3 | Future failure reset/session/lockout tests |
 | U01 | Login/group/name header; access count; role-dependent menu; no user registration option | A pp.2,6 | 3–4 | Future role tests/manual screens |
 | U02 | Consultation field limits, path/phrase, List, names/owner/group table, count, Back | A pp.4–5 | 4 | Future manual UI and service tests |
 | U03 | Exit confirmation; end session/end system/back; logout restarts login | A p.6 | 4 | Future lifecycle/navigation/manual checks |
 | V01 | Validate current user's passphrase before listing | A p.5 | 4 | Future correct/wrong/mismatched key tests |
-| V02 | Bootstrap admin decrypts and verifies index/share before any list | A p.5; D pp.4–9 | 1,4 | Future fixture and tampered-catalog tests |
-| V03 | Parse index: code, secret filename, owner, group; share: code, positive ID, recipient | A p.5; D pp.4–5 | 4 | Future parsing/verified fixture metadata matrix |
+| V02 | Bootstrap admin decrypts and verifies index/share before any list | A p.5; D pp.4–9 | 1,4 | CryptoCompatibilityTest: both actual catalogs verified; corrupted index copies rejected; production listing pending |
+| V03 | Parse index: code, secret filename, owner, group; share: code, positive ID, recipient | A p.5; D pp.4–5 | 4 | Fixture-test oracle derives verified owner/group/recipient matrix; production parser pending Phase 4 |
 | V04 | Deduplicated listing union: owner, same group, explicit recipient | A p.5 | 4 | Future per-user/per-file policy tests |
-| V05 | Owner .env, recipient .N.shr; verify owner signature, then save secret filename | A p.6; D pp.6–9 | 1,4 | Future owner/share equal-content proof and extraction tests |
+| V05 | Owner .env, recipient .N.shr; verify owner signature, then save secret filename | A p.6; D pp.6–9 | 1,4 | CryptoCompatibilityTest: owner/share equality passes; saving/extraction UI pending Phase 4 |
 | V06 | Recheck permissions; unknown owner/missing envelope/corruption cannot publish output | A pp.5–6; plan | 4 | Future negative tests on temporary copies |
 | V07 | Safe output outside original fixture tree; no traversal/overwrite; verify before publish | Approved plan | 4 | Future output safety tests |
 | V08 | Group-only decryption mechanism | A pp.5–6 ambiguity | 4 | BLOCKED pending professor clarification; listing still required |
@@ -74,9 +74,10 @@ The PDFs override this extraction. Phase 0 does not establish crypto/security fu
 22 files: three certificate/encrypted-key pairs; index/share encrypted+envelope+signature
 triplets; XXYYZZ00/11/22 triplets; XXYYZZ22.1.shr. Public identities are admin, user01,
 user02 at inf1416.puc-rio.br. RSA keys are 2048 bits; envelopes/signatures are 256 bytes;
-certificate signatures are SHA256withRSA. These observed facts are not decryption proof.
+certificate signatures are SHA256withRSA. Phase 1 proves key restoration, catalog signatures, all owner payloads and the explicit recipient route.
 
-Phase 1 must use locally supplied credentials to authenticate both catalogs, establish real
-owners/groups/recipient, verify all payloads, and prove owner/share paths produce identical
-content. Never infer recipient from the .shr filename or guess fixture group mappings.
+The explicitly invoked fixture profile uses ignored local credentials and checks original hashes before/after.
+Verified relationships: XXYYZZ00 -> admin / administrador; XXYYZZ11 -> user01 / usuario;
+XXYYZZ22 -> user02 / usuario, explicitly shared (ID 1) with user01. All identities use
+@inf1416.puc-rio.br. No group-only decryption or production group mapping is implemented.
 No passphrase or extracted plaintext belongs in this document or Git.
