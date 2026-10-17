@@ -1,2 +1,2 @@
-/** SQLite persistence and repositories (Phase 2). No implementation in Phase 0. */
+/** SQLite schema, per-connection foreign keys and transactional prepared-statement repositories. */
 package br.pucrio.inf1416.cofre.db;

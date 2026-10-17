@@ -1,9 +1,10 @@
 # Cofre Digital — INF1416 / Trabalho T3
 
 Java SE application foundation for the PUC-Rio digital-vault assignment.
-**Phases 0 and 1 are implemented.** The standalone cryptographic engine is tested against
-the professor fixtures. There is no application authentication, database, vault UI, keypad,
-or operational audit viewer yet; the executable launchers remain the original foundation shells.
+**Phases 0–2 are implemented.** The tested cryptographic engine now supports SQLite
+persistence, transactional registration, administrator bootstrap, startup validation and
+Portuguese Swing forms. MFA login, the virtual keypad, user main menu, vault and operational
+audit viewer await later phases.
 
 ## Build
 
@@ -30,10 +31,36 @@ Do not use the Oracle `javapath` shim if it hangs; select the real JDK directory
 & 'C:\Program Files\Java\jdk-24\bin\java.exe' -jar target/cofre-digital.jar
 ```
 
-The last command opens a Portuguese Swing foundation shell on a graphical desktop.
+The last command opens the first-run registration or administrator startup-validation screen.
 `--check`/`--help` do not create files or read secret material. `logView` without those
 flags exits with code 2: audit viewing is deliberately unavailable until implemented.
 The two executable JARs bundle runtime dependencies and have independent main classes.
+
+## Manually check Phase 2
+
+Run commands from the project root. Normal startup automatically creates `runtime/cofre.db`;
+do not prepopulate it with test credentials.
+
+1. On the first run, select the administrator certificate and encrypted private key, enter
+   its private passphrase, and choose an 8–10 ASCII-digit personal password with no equal
+   adjacent digits. Confirm that password. The bootstrap group is fixed to Administrador.
+2. Click Cadastrar. Review version/serial/validity/signature/issuer/subject/name/email in
+   the certificate dialog. Canceling either dialog creates no account and retains the form.
+3. Accept the certificate, then enroll the displayed Base32 key as a time-based token in
+   Google Authenticator. Acknowledge enrollment to commit the account. No QR code is required.
+4. The form clears and startup reaches an explicit **Phase 3 unavailable** screen. This
+   screen is not a logged-in administrator session and offers no user-registration shortcut.
+5. Close using Encerrar sistema, then run the same command again. Supply the administrator's
+   private-key passphrase; the key is now loaded from the database, not the original file path.
+   An incorrect phrase/key validation ends the process after an error notification.
+
+The administrator-authorized registration component is implemented and exercised with a
+test-only authorization setup. Production navigation to it must wait for Phase 3 MFA;
+startup key validation deliberately cannot grant registration privileges. Do not add a demo bypass.
+The default registration service/UI tests use generated certificates and disposable temporary
+databases. The fixture profile additionally registers all three professor identities in a
+temporary database and verifies their encrypted records after reopening it. It does not seed
+the normal runtime database or print credentials.
 
 ## Tests and project records
 
@@ -68,6 +95,7 @@ and does not create extracted files. See `docs/PHASE1-RESULTS.md` for exact evid
 - `AGENTS.md`: instructions for future Codex sessions.
 - `docs/PHASE0-RESULTS.md`: actual validation results and remaining checks.
 - `docs/PHASE1-RESULTS.md`: cryptographic APIs, real-fixture compatibility and test results.
+- `docs/PHASE2-RESULTS.md`: schema, registration/startup behavior, audit semantics, tests and limitations.
 
 Runtime artifacts belong in ignored `runtime/` and `output/`; private configuration
 belongs in ignored `.local/`. Never write outputs into `Pacote-T3/` or commit secrets.

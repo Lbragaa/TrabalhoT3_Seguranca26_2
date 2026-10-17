@@ -2,10 +2,11 @@
 
 ## Current authorization and status
 
-Phase 0 is complete. The user explicitly authorized **Phase 1 only** on 17 October 2026.
-Phase 1 is implemented and validated: 87 fixture-enabled tests pass (67 in the default suite).
-Do not implement Phase 2 or later without explicit subsequent user approval.
-Read `PLAN.md`, `REQUIREMENTS.md`, `docs/PHASE0-RESULTS.md`, and `docs/PHASE1-RESULTS.md`.
+Phases 0 and 1 are complete. The user explicitly authorized **Phase 2 only** on 17 October 2026.
+Phase 1 baseline: 87 fixture-enabled tests pass (67 in the default suite).
+Phase 2 is complete: 120 fixture-enabled tests pass (99 default), with no failures or skips.
+Do not implement Phase 3 or later without explicit subsequent user approval.
+Read `PLAN.md`, `REQUIREMENTS.md`, and `docs/PHASE2-RESULTS.md`; earlier phase reports preserve history.
 These documents preserve decisions; the PDFs remain authoritative if a conflict arises.
 
 ## Working rules
@@ -42,13 +43,28 @@ These documents preserve decisions; the PDFs remain authoritative if a conflict 
 The script downloads SHA-512-verified Maven 3.9.9 if missing, sets JAVA_HOME only for
 the build, and uses `.tools/m2` as the dependency cache. Pass `-JdkHome` if necessary.
 It does not alter system PATH or the registry. Network restrictions may require the
-normal tool approval process on first download. Both entry points are Phase 0 shells.
+normal tool approval process on first download. The vault now runs Phase 2 startup; logView remains a shell.
 The default suite does not read private fixture credentials. `-Pfixtures` runs the full suite
 and fails explicitly if ignored `.local/fixture-secrets.properties` lacks admin/user01/user02.
 It also checks the public assignment BCrypt example from ignored
 `.local/assignment-bcrypt-example.properties` (`password` and `hash`, copied from A p.3).
-Never print either file. Real fixture identities/groups are recorded in the Phase 1 report;
-group label mapping and group-only decryption remain later-phase concerns.
+Never print either file. Group mapping is implemented (1=administrador, 2=usuario).
+Group-only decryption remains unresolved. The registration fixture test uses temporary copies
+and proves all three identities survive database reopening; it never seeds runtime/cofre.db.
+
+## Phase 2 / future Phase 3 integration boundary
+
+- Startup READY is not MFA and grants no authenticated session or registration capability.
+- RegistrationAuthorization has a package-private constructor. Only test sources mint it now.
+  Future AuthenticationService in auth may issue it after full MFA and revoke it on logout.
+  Do not add a public issuer or UI shortcut to demonstrate registration before that gate.
+- RegistrationService: showForm -> prepare -> confirmCertificate -> enrollment acknowledgement
+  -> commit. PendingRegistration and RegistrationRequest are closeable and must be closed.
+- Bootstrap commit returns a closeable Result. StartupService.acceptBootstrap consumes its
+  administrator context; close the result in all cases. Ordinary results never contain that context.
+- Database work uses IMMEDIATE transactions, per-connection foreign keys, and prepared statements.
+  Audit confirmation 6008 must stay inside the registration transaction. Never suppress audit errors.
+- Crypto classes/interoperability and the original 87 fixture-enabled tests are unchanged.
 
 ## Source map
 
