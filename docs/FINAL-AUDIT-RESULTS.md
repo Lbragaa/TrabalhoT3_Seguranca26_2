@@ -1,5 +1,51 @@
 # Final compliance audit and release verification — 17 October 2026
 
+## 19 October 2026 native verification and PowerShell correction
+
+This addendum supersedes earlier manual-pending statements for the checks actually executed here.
+The latest release is `output/delivery-20261019/`; use its SHA256SUMS.txt for current hashes.
+Prior 17 October archive/evidence below remains historical, not the latest release manifest.
+
+The user completed actual administrator, user01 and user02 registration/enrollment and keypad/
+Google Authenticator MFA. Native Windows control then exercised both role menus, exit/Back,
+consultation, invalid folder/phrase refusal, every owner extraction and user01's explicit share.
+The user02 owner output and user01 recipient output are byte-for-byte identical. Repeated output
+was refused without changing existing bytes. Group-only extraction showed the documented absent-
+envelope message with an empty output directory: safe refusal, not fulfilled group decryption.
+Logout and full system exit/relaunch worked. User02 completed MFA after restart: access count 2,
+consultation count still 1, with new consultation fields/list cleared. All 22 fixture hashes match.
+Outputs/test notes remain ignored; runtime accounts were preserved, not reset or included in delivery.
+
+The user ran the real independent viewer in Windows PowerShell, authenticated against the real
+registered administrator and supplied chronological audit output covering these workflows. The
+user explicitly confirmed that passphrase characters stayed invisible while typing (the phrase
+was present only in the pasted transcription). No echoed-input fallback was added.
+
+That terminal output demonstrated garbled accents. Read-only inspection confirmed Mensagens
+contains correct Unicode. The Java viewer already writes UTF-8; Windows PowerShell's cached native
+decoder can retain its previous encoding despite chcp 65001. A targeted reproduction using codepage
+850 then chcp 65001 failed to preserve the help text's accented word with the old command under
+both Java17 and Java24. scripts/logview.ps1 sets Console.OutputEncoding and OutputEncoding to UTF-8
+before invoking the unchanged independent viewer. The same captured native-output check then passes
+on both runtimes. These are process/session settings only; no registry/security policy changes.
+The script accepts a key path, database, Java executable and non-authenticating -Check; it never
+handles passphrases or bypasses Console.readPassword. Native authentication was not automated.
+
+12 focused LogViewTest/FoundationTest cases pass on real Java17 with zero failures/errors/skips;
+both JARs are repackaged. The earlier full 190/214 runs remain the full-suite baseline: no Java
+production code changed for this correction. An observed unrelated local pom release=25 edit was
+restored to the approved release17 (installed build JDK is 24). No assertion/coverage was weakened.
+The corrected wrapper's authenticated rows still require the user's short terminal rerun; the
+encoding mechanism itself has been reproduced and verified. Use:
+
+```powershell
+./scripts/logview.ps1 'Pacote-T3/Keys/admin-pkcs8-aes.key'
+```
+
+Recommendation remains CONDITIONAL GO for the unresolved group requirement and provisional
+password repetition interpretation. The native/phone demonstration gap is now substantially
+closed by executed evidence. This follow-up makes no commit, push or submission.
+
 ## Recommendation: CONDITIONAL GO
 
 The implemented owner/explicit-share workflows, MFA, persistence and independent viewer pass the

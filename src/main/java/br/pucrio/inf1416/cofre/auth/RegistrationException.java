@@ -1,3 +1,8 @@
+/*
+ * Integrantes:
+ * Luan Braga - Matricula: 2411776
+ * Diogo Benchimol - Matricula: 2312917
+ */
 package br.pucrio.inf1416.cofre.auth;
 
 public final class RegistrationException extends Exception {

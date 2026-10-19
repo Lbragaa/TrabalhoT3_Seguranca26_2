@@ -1,7 +1,9 @@
 # Cofre Digital — INF1416 / Trabalho T3
 
+Integrantes: **Luan Braga (2411776)** e **Diogo Benchimol (2312917)**.
+
 Final compliance review: [FINAL-AUDIT-RESULTS](docs/FINAL-AUDIT-RESULTS.md).
-Latest audited archive and hashes: `output/delivery-final-audit/` (local generated output).
+Latest release and hashes: `output/delivery-20261019/` (local generated output).
 Use [FINAL-DELIVERY-CHECKLIST](FINAL-DELIVERY-CHECKLIST.md) for the existing-account manual smoke test.
 
 Java SE application for the PUC-Rio digital-vault assignment.
@@ -36,11 +38,15 @@ Do not use the Oracle `javapath` shim if it hangs; select the real JDK directory
 & 'C:\Program Files\Java\jdk-24\bin\java.exe' -jar target/logView.jar --help
 & 'C:\Program Files\Java\jdk-24\bin\java.exe' -jar target/cofre-digital.jar
 # Real terminal, hidden input; uses existing runtime/cofre.db:
-chcp 65001
-& 'C:\Program Files\Java\jdk-24\bin\java.exe' -jar target/logView.jar 'Pacote-T3/Keys/admin-pkcs8-aes.key'
+./scripts/logview.ps1 'Pacote-T3/Keys/admin-pkcs8-aes.key'
 ```
 
 The last command opens the first-run registration or administrator startup-validation screen.
+The PowerShell launcher sets session-only UTF-8 decoding as well as output encoding. `chcp`
+alone can leave Windows PowerShell decoding Java output with its previous encoding.
+Use `-JavaPath 'C:\path\to\java.exe'` or `-Database 'runtime/cofre.db'` when needed.
+It never accepts or reads a passphrase itself; the independent Java viewer still uses Console.readPassword.
+
 `--check`/`--help` do not create files or read secret material. logView requires a registered
 administrator key and System.console().readPassword; redirected/no-console input is refused.
 Use optional `--database <existing-path>` after the key argument to select another database.

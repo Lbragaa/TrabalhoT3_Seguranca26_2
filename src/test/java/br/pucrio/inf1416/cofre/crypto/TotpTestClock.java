@@ -1,3 +1,8 @@
+/*
+ * Integrantes:
+ * Luan Braga - Matricula: 2411776
+ * Diogo Benchimol - Matricula: 2312917
+ */
 package br.pucrio.inf1416.cofre.crypto;
 
 /** Test-only access to the existing numeric-time seam; never packaged. */

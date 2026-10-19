@@ -1,5 +1,10 @@
 # Approved implementation roadmap
 
+19 October follow-up evidence and the Windows PowerShell UTF-8 launcher are recorded in
+the dated FINAL-AUDIT-RESULTS addendum. Latest release: output/delivery-20261019/.
+Native phone/MFA, extraction, sharing and persistence were actually exercised with the user;
+group-only decryption remains unresolved. No additional development phase was added.
+
 Latest checkpoint: the user-authorized final pre-submission audit is recorded in
 `docs/FINAL-AUDIT-RESULTS.md`. Both complete suites were rerun after the UTF-8 fix
 (190 default / 214 on Java17, zero failures/errors/skips). Audited delivery is in

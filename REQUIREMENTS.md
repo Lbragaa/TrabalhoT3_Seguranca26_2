@@ -1,5 +1,10 @@
 # Requirements and verification matrix
 
+19 October: native/phone workflows and production viewer authentication were exercised with
+the user. The remaining Windows PowerShell display issue is addressed by scripts/logview.ps1;
+both Java17/24 launcher encoding smoke checks and 12 focused Java17 tests pass. See the dated
+FINAL-AUDIT-RESULTS addendum for exact scope; group-only extraction remains incomplete.
+
 For the independent final requirement-by-requirement classifications based on a fresh full
 PDF/code review, see `docs/FINAL-AUDIT-RESULTS.md`. Its final full-suite evidence supersedes
 the earlier phase-specific runtime/test limitations below; native desktop/phone and the

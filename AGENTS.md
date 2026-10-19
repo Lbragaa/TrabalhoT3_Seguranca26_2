@@ -2,6 +2,16 @@
 
 ## Current authorization and status
 
+19 October follow-up: user-authorized native testing completed registration/enrollment/MFA
+for all 3 real identities, owner and explicit-share extraction (byte-identical outputs),
+overwrite refusal, navigation/logout, full restart and saved counters. Group-only extraction
+still fails closed. The user ran real production logView and confirmed passphrase input was invisible.
+Windows PowerShell output garbling was reproduced and fixed with scripts/logview.ps1 using
+session-only Console.OutputEncoding and OutputEncoding UTF-8; smoke checks pass on Java17/24.
+12 focused Java17 viewer/launcher tests pass; no Java service/crypto change. pom target restored
+from an observed local 25 edit to the approved 17. Latest release: output/delivery-20261019/.
+See the dated addendum in docs/FINAL-AUDIT-RESULTS.md; earlier manual-pending statements are historical.
+
 Final pre-submission audit was authorized and completed on 17 October 2026 after Phase 5.
 Read `docs/FINAL-AUDIT-RESULTS.md` first for the latest compliance assessment and final release.
 Current full clean verification: 190 default tests on JDK24 and 214 fixture tests on Java17,
@@ -30,6 +40,9 @@ Read `PLAN.md`, `REQUIREMENTS.md`, and `docs/PHASE5-RESULTS.md`; earlier phase r
 These documents preserve decisions; the PDFs remain authoritative if a conflict arises.
 
 ## Working rules
+
+- Every Java source, including tests and package-info.java, must begin with a comment naming
+  Luan Braga (2411776) and Diogo Benchimol (2312917), as required by the user's submission notice.
 
 - Keep `Pacote-T3/` and the two original PDFs unchanged. Never regenerate fixtures or update
   the checksum baseline merely to make a failing integrity check pass.
